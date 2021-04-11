@@ -1,5 +1,6 @@
 import { Theme } from "../config/theme";
 import { DatabaseIcon } from "../icons/database-icon";
+import { EventModeIcon } from "../icons/event-mode-icon";
 import { LoadIcon } from "../icons/load-icon";
 import { PencilIcon } from "../icons/pencil-icon";
 import { SaveIcon } from "../icons/save-icon";
@@ -60,7 +61,7 @@ export class ToolbarEditor implements IEditor {
 
     const paintBtn = this.createButton(
       'Paint Mode (Left Shift)',
-      PencilIcon(1),
+      PencilIcon(1.5),
       this.paintMode,
     )
     paintBtn.style.opacity = this.mode === ToolbarMode.DRAW ? '1' : '.5'
@@ -68,7 +69,7 @@ export class ToolbarEditor implements IEditor {
 
     const eventBtn = this.createButton(
       'Event Mode',
-      PencilIcon(1),
+      EventModeIcon(1.5),
       this.eventMode,
     )
     eventBtn.style.opacity = this.mode === ToolbarMode.EVENT ? '1' : '.5'

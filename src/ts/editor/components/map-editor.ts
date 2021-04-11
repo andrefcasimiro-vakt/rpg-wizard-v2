@@ -200,10 +200,6 @@ export class MapEditor implements IEditor {
   findMapByUuid = (uuid: string, callback: (foundMap: IMap) => void, maps = this.maps) => {
     for (const map of maps) {
       if (map.uuid === uuid) {
-        if (!map.layers?.length) {
-          map.layers = [{ grounds: [] }]
-        }
-
         callback(map)
         break
       }
@@ -213,35 +209,6 @@ export class MapEditor implements IEditor {
       }
     }
   }
-
-  // @deprecated
-  // paintGround = (
-  //   uuid: string,
-  //   ground: IGround,
-  //   maps: IMap[] = this.maps,
-  // ) => {
-  //   for (const map of maps) {
-  //     if (map.uuid === uuid) {
-  //       if (!map.layers?.length) {
-  //         map.layers = [{ grounds: [] }]
-  //       }
-
-  //       const index = map.layers[0].grounds.indexOf(ground)
-
-  //       if (index !== -1) {
-  //         map.layers[0].grounds[index] = ground
-  //       } else {
-  //         map.layers[0].grounds.push(ground)
-  //       }
-
-  //       break
-  //     }
-
-  //     if (map.children?.length) {
-  //       this.paintGround(uuid, ground, map.children)
-  //     }
-  //   }
-  // }
 
   scrollToItemGUI = (uuid: string) => {
     // Scroll to last map on the list

@@ -70,7 +70,6 @@ export class Editor {
   renderBrush = () => {
     this.brush = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial({ color: 'red' }))
     this.brush.visible = true
-    this.sceneEditor.scene.add(this.brush)
   }
 
   // UI
@@ -118,15 +117,16 @@ export class Editor {
   }
 
   onIntersection = (intersection: Intersection) => {
-    var intersectionPosition = intersection.point.round()
+    this.sceneEditor.scene.add(this.brush)
 
+    var intersectionPosition = intersection.point.round()
     const ground = this.entityEditor.currentEntity as IGround
     if (ground) {
       this.brush.material = new MeshBasicMaterial({ color: ground.color })
     }
 
     var nextPosition = intersectionPosition.clone()
-    this.brush.position.set(nextPosition.x, nextPosition.y, nextPosition.z)
+    this.brush.position.set(nextPosition.x, -0.49, nextPosition.z)
 
     if (nextPosition?.equals(this?.lastPaintedPosition)) {
       return
