@@ -1,5 +1,10 @@
 import shortid = require("shortid");
+import { Theme } from "../config/theme";
 import { IEntity, IGround } from "../interfaces/IEntity";
+import { createActionButtonGUI, createActionPanelGUI, createListPanelGUI } from "../utils/ui";
+
+const GUI_PANEL_HEIGHT = 300
+const ITEM_PANEL_HEIGHT = 200
 
 type EntityType = 'ground' | 'walls' | 'props' | 'events'
 
@@ -14,13 +19,71 @@ const grounds: IGround[] = [
     name: 'dirt',
     color: 'yellow'
   },
+  {
+    uuid: shortid.generate(),
+    name: 'ground',
+    color: 'green'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'dirt',
+    color: 'yellow'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'dirt',
+    color: 'yellow'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'dirt',
+    color: 'yellow'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'ground',
+    color: 'green'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'dirt',
+    color: 'yellow'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'ground',
+    color: 'green'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'dirt',
+    color: 'yellow'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'ground',
+    color: 'green'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'dirt',
+    color: 'yellow'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'ground',
+    color: 'green'
+  },
+  {
+    uuid: shortid.generate(),
+    name: 'dirt',
+    color: 'yellow'
+  },
+
 ]
 
 export class EntityEditor {
-  
-  public selectedMode: EntityType = 'ground'
-  
-  public selectedEntity: IEntity = grounds[0]
+  // Dependencies
 
   // Assets
   public grounds: IGround[] = grounds
@@ -32,116 +95,130 @@ export class EntityEditor {
 
   public uiContainer: HTMLElement
 
+  // Mode Selection
+  private _currentMode: EntityType = 'ground'
+
+  public get currentMode() {
+    return this._currentMode
+  }
+
+  public set currentMode(value: EntityType) {
+    this._currentMode = value
+
+    // Redraw Gui
+    this.redrawPanelButtonsGui()
+    this.redrawEntitiesListGui()
+  }
+
+  // Entity Selection
   public onEntityChange: () => void;
 
-  constructor(uiContainer: HTMLElement) {
+  private _currentEntity: IEntity = grounds?.[0]
+
+  public get currentEntity() {
+    return this._currentEntity
+  }
+
+  public set currentEntity(value: IEntity) {
+    this._currentEntity = value
+
+    // Notify subscribers
+    if (this.onEntityChange) {
+      this.onEntityChange()
+    }
+
+    // Redraw GUI
+    this.redrawEntitiesListGui()
+  }
+
+  constructor(
+    uiContainer: HTMLElement,
+  ) {
     this.uiContainer = uiContainer
-    this.init()
+
+    this.drawGui()
   }
 
-  init() {
-    this.attachGui()
-  }
-
-
-  attachGui() {
+  // GUI
+  drawGui = () => {
+    // Gui Panel
     this.guiPanel = document.createElement('div')
-    this.guiPanel.innerHTML = `<h2>Asset list</h2>`
-    this.guiPanel.style.width = `200px`
-    this.guiPanel.style.height = `100%`
-    this.guiPanel.style.padding = `10px`
-    this.guiPanel.style.height = `calc(100% - 500px)`
-    this.guiPanel.style.color = '#FFF'
+    this.guiPanel.innerHTML = `<h3>Entity Editor</h3>`
+    const guiPanelStyle = this.guiPanel.style
+    guiPanelStyle.width = `100%`
+    guiPanelStyle.height = `100%`
+    guiPanelStyle.height = `${GUI_PANEL_HEIGHT}px`
+    guiPanelStyle.color = `${Theme.DARK}`
+    guiPanelStyle.marginBottom = `10px`
 
-    this.itemsPanel = document.createElement('div')
-    this.itemsPanel.style.overflow = 'scroll'
-
-    this.itemsPanel.style.display = 'flex'
-    this.itemsPanel.style.flexDirection = 'row'
-    this.itemsPanel.style.flexWrap = 'wrap'
-    this.renderAssetList()
+    // Scrollable Item List Panel
+    this.itemsPanel = createListPanelGUI(ITEM_PANEL_HEIGHT)
+    this.redrawEntitiesListGui()
     this.guiPanel.appendChild(this.itemsPanel)
     
-    this.actionsPanel = document.createElement('div')
-    this.renderButtons()
+    this.actionsPanel = createActionPanelGUI()
+    this.redrawPanelButtonsGui()
 
     this.guiPanel.appendChild(this.actionsPanel)
-
     this.uiContainer.appendChild(this.guiPanel)
   }
 
-  renderButtons() {
-    this.actionsPanel.innerHTML = ''
-    this.actionsPanel.appendChild(this.getModeButton('ground'))
-    this.actionsPanel.appendChild(this.getModeButton('walls'))
-    this.actionsPanel.appendChild(this.getModeButton('props'))
-    this.actionsPanel.appendChild(this.getModeButton('events'))
-  }
-
-  renderAssetList() {
+  redrawEntitiesListGui = () => {
     this.itemsPanel.innerHTML = ''
+    const itemsPanelStyle = this.itemsPanel.style
+    itemsPanelStyle.background = Theme.NEUTRAL_DARK
+    itemsPanelStyle.padding = `5px`
 
     let entities: IEntity[] = []
-    if (this.selectedMode === 'ground') {
+
+    if (this.currentMode === 'ground') {
       entities = this.grounds
     }
 
     entities.forEach(entity => {
       const entityBtn = document.createElement('button')
-      entityBtn.style.width = '50px'
-      entityBtn.style.height = '50px'
+      const btnStyle = entityBtn.style
+      btnStyle.width = '20%'
+      btnStyle.height = '60px'
+      btnStyle.margin = '1px'
 
-      // @ts-ignore
-      entityBtn.style.background = entity?.color || '#FFF'
-      entityBtn.style.cursor = 'pointer'
+      const ground = entity as IGround
+      btnStyle.background = ground?.color || Theme.PRIMARY
 
-      const isSelected = entity.uuid === this.selectedEntity?.uuid
-      if (isSelected) {
-        entityBtn.style.opacity = '1'
-      } else {
-        entityBtn.style.opacity = '.25'
-      }
+      btnStyle.cursor = 'pointer'
+
+      const isSelected = entity.uuid === this.currentEntity?.uuid
+
+      btnStyle.border = `1px solid ${Theme.NEUTRAL_DARKER}`
+      btnStyle.opacity = isSelected ? '1' : '0.25'
+      btnStyle.color = Theme.DARK
 
       entityBtn.innerHTML = entity.name
+
       entityBtn.onclick = () => {
-        this.selectedEntity = entity
-
-        // Notify
-        if (this.onEntityChange) {
-          this.onEntityChange()
-        }
-
-        // Refresh GUI
-        this.renderAssetList()
+        this.currentEntity = entity
       }
       
       this.itemsPanel.appendChild(entityBtn)
     })
   }
 
-  getModeButton(type: EntityType) {
+  redrawPanelButtonsGui = () => {
+    this.actionsPanel.innerHTML = ''
+    this.actionsPanel.appendChild(this.createActionButtonGui('ground'))
+    this.actionsPanel.appendChild(this.createActionButtonGui('walls'))
+    this.actionsPanel.appendChild(this.createActionButtonGui('props'))
+    this.actionsPanel.appendChild(this.createActionButtonGui('events'))
+  }
+
+  createActionButtonGui(type: EntityType): HTMLButtonElement {
     const label = type.toUpperCase()
 
-    const btn = document.createElement('button')
-    btn.innerHTML = label
-    btn.style.cursor = 'pointer'
-    const isActive = type === this.selectedMode
-    if (isActive) {
-      btn.style.background = 'white'
-    } else {
-      btn.style.background = 'grey'
-    }
-
-    btn.onclick = () => {
-      this.selectedMode = type
-
-      // Refresh GUI
-      this.renderButtons()
-      this.renderAssetList()
-    }
+    const isActive = type === this.currentMode
+    const btn = createActionButtonGUI(label, isActive)
+    btn.onclick = () => { this.currentMode = type }
 
     return btn
   }
-
 
 }

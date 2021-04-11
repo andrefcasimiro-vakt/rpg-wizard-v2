@@ -1,0 +1,2 @@
+export const LoadIcon = (size: number = 1) => `<svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 16 16" height="${size}em" width="${size}em" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 15l3-8h-13l-3 8zM2 6l-2 9v-13h4.5l2 2h6.5v2z"></path></svg>`

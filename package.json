@@ -30,6 +30,7 @@
   "devDependencies": {
     "@types/jquery": "^3.5.1",
     "@types/lodash": "^4.14.149",
+    "@types/shortid": "0.0.29",
     "css-loader": "^3.4.0",
     "style-loader": "^1.2.1",
     "ts-loader": "^6.2.1",
@@ -40,12 +41,12 @@
     "webpack-merge": "^4.2.2"
   },
   "dependencies": {
-    "@types/shortid": "0.0.29",
+    "@types/three": "^0.127.0",
     "jquery": "^3.5.1",
-    "lodash": "^4.17.20",
+    "lodash": "^4.17.21",
     "shortid": "^2.2.16",
     "sweetalert2": "^9.17.1",
-    "three": "0.113.0",
-    "three-csm": "1.0.2"
+    "three": "0.127.0",
+    "three-csm": "1.1.0"
   }
 }

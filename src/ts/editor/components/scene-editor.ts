@@ -1,6 +1,9 @@
-import { AmbientLight, AxesHelper, BackSide, BoxGeometry, GridHelper, ImageUtils, Intersection, Mesh, MeshBasicMaterial, PerspectiveCamera, PlaneGeometry, PointLight, Ray, Raycaster, RepeatWrapping, Scene, TextureLoader, Vector2, Vector3, WebGLRenderer } from "three";
+import { AmbientLight, AxesHelper, BackSide, BoxGeometry, GridHelper, ImageUtils, Intersection, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, PlaneGeometry, PointLight, Ray, Raycaster, RepeatWrapping, Scene, Texture, TextureLoader, Vector2, Vector3, WebGLRenderer } from "three";
 import { IEditor } from "../interfaces/IEditor";
 import { OrbitControls } from '../../../lib/orbitControls'
+import { MapEditor } from "./map-editor";
+import { IGround } from "../interfaces/IMap";
+import _ = require("lodash");
 
 export class SceneEditor implements IEditor {
 
@@ -10,22 +13,28 @@ export class SceneEditor implements IEditor {
 
   public renderer: WebGLRenderer
 
-  private ambientLight: AmbientLight
-
   private orbitControls: OrbitControls
-
-  private gridHelper: GridHelper
 
   private raycaster: Raycaster = new Raycaster()
   private mouse: Vector2 = new Vector2()
 
-  private previousPoint: Vector3
-
   public onIntersection: (intersection: Intersection) => void;
 
-  public groundGrid: Mesh[] = []
+  public grid: Mesh[] = []
 
-  constructor() {
+  public layer1Grounds: Mesh[] = []
+
+  private mapEditor: MapEditor
+
+  // Grid
+  private squareT: Texture;
+  private basePlane: Mesh;
+
+  constructor(
+    mapEditor: MapEditor
+  ) {
+    this.mapEditor = mapEditor
+
     this.scene = new Scene()
 
     // Camera
@@ -39,7 +48,98 @@ export class SceneEditor implements IEditor {
     this.camera = new PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR)
     this.camera.position.z = 5
 
-    // Skybox
+    // Scene
+    this.recreateScene()
+
+    // Grid
+    this.squareT = new TextureLoader().load('build/assets/square-thick.png')
+    this.squareT.wrapS = this.squareT.wrapT = RepeatWrapping
+    this.squareT.repeat.set(1, 1)
+
+    var planeGeo = new PlaneGeometry(1, 1)
+    var planeMat = new MeshBasicMaterial({ map: this.squareT, color: 0xbbbbbb})
+    this.basePlane = new Mesh(planeGeo, planeMat)
+    this.basePlane.rotation.x = -Math.PI / 2
+
+    // Renderer
+    this.renderer = new WebGLRenderer()
+    document.body.appendChild(this.renderer.domElement)
+
+    // Controls
+    this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement)
+
+    // Events
+    window.addEventListener('mousemove', this.onMouseMove, false)
+
+    this.animate()
+
+    this.redrawScene()
+  }
+
+  onMouseMove = (event: MouseEvent) => {
+    this.mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
+    this.mouse.y = -(event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
+  }
+
+  resize = () => {
+    this.renderer.setSize(window.innerWidth, window.innerHeight)
+    this.renderer.setPixelRatio(window.devicePixelRatio)
+    this.camera.aspect = window.innerWidth / window.innerHeight
+    this.camera.updateProjectionMatrix()
+  }
+
+  animate = () => {
+    requestAnimationFrame(this.animate)
+
+    this.update()
+  }
+
+  update = () => {
+    this.renderer.render(this.scene, this.camera)
+
+    this.resize()
+    this.handleRaycast()
+  }
+
+  handleRaycast = () => {
+    if (!this.onIntersection) {
+      return
+    }
+
+    this.raycaster.setFromCamera(this.mouse, this.camera)
+
+    this.raycaster
+      .intersectObjects([...this.grid, ...this.layer1Grounds])
+      .forEach(this.onIntersection)
+  }
+
+  drawGrid = () => {    
+    let width = 50
+    let depth = 50
+
+    for (let i = -width / 2; i < width / 2; i++) {
+      for (let j = -depth / 2; j < depth / 2; j++) {
+
+        const ground = this.layer1Grounds.find((ground) => ground.position.x === i && ground.position.z === j)
+        if (ground) {
+          const entry = ground.clone()
+          entry.position.set(i, -0.5, j)
+          this.scene.add(entry)
+          continue
+        }
+        
+        var entry = this.basePlane.clone()
+        entry.position.set(i, 0, j)
+
+        this.grid.push(entry)
+        this.scene.add(entry)
+      }
+    }
+  }
+
+  recreateScene = () => {
+    this.scene = new Scene()
+
     var skyboxGeometry = new BoxGeometry(1000, 1000, 1000)
     var skyboxMaterial = new MeshBasicMaterial({ color: 0xffffee, side: BackSide })
     var skybox = new Mesh(skyboxGeometry, skyboxMaterial)
@@ -53,157 +153,38 @@ export class SceneEditor implements IEditor {
     var light = new PointLight(0xffffff)
     light.position.set(100, 250, 100)
     this.scene.add(light)
+  }
 
-    // Grid
-    var squareT = new TextureLoader().load('build/assets/square-thick.png')
-    squareT.wrapS = squareT.wrapT = RepeatWrapping
-    squareT.repeat.set(1, 1)
+  clearScene = () => {
+    this.recreateScene()
+    
+    this.layer1Grounds = []
+    this.grid = []
+  }
 
-    var planeGeo = new PlaneGeometry(1, 1)
-    var planeMat = new MeshBasicMaterial({ map: squareT, color: 0xbbbbbb})
-    var basePlane = new Mesh(planeGeo, planeMat)
-    basePlane.rotation.x = -Math.PI / 2
+  redrawScene = () => {   
+    this.clearScene()
 
-    let width = 50
-    let depth = 50
+    const grounds = this.mapEditor.currentMap?.layers?.[0]?.grounds || []
+    const mesh = new Mesh(new BoxGeometry(.8, 1, .8))
 
-    for (let i = -width / 2; i < width / 2; i++) {
-      for (let j = -depth / 2; j < depth / 2; j++) {
-        var entry = basePlane.clone()
-        entry.position.set(i, 0, j)
-        this.groundGrid.push(entry)
-        this.scene.add(entry)
-      }
+    for (const ground of grounds) {
+      const tmp = mesh.clone()
+      const y =  -0.5 // -0.5 // Layer 1
+      tmp.position.set(ground.position.x, y, ground.position.z)
+      tmp.material = new MeshBasicMaterial({ color: ground.color})
+
+      this.layer1Grounds.push(tmp)
     }
 
-
-    // const geometry =  new BoxGeometry(1, 1, 1);
-    // const material = new MeshBasicMaterial( { color: 0x00ff00 } );
-    // const cube = new Mesh( geometry, material );
-    // this.scene.add( cube );
-
-    // // Camera
-    // this.camera = new PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
-    // this.camera.position.z = 5
-
-    // Renderer
-    this.renderer = new WebGLRenderer()
-    document.body.appendChild(this.renderer.domElement)
-
-    // // Ambient Light
-    // this.ambientLight = new AmbientLight(0x404040)
-    // this.scene.add(this.ambientLight)
-
-    // Controls
-    this.orbitControls = new OrbitControls(this.camera, this.renderer.domElement)
-
-    // // Grid Helper
-    // this.gridHelper = new GridHelper(10, 10)
-    // this.gridHelper.position.set(.5, .5, .5)
-    // this.gridHelper.scale.setScalar(1)
-    // this.scene.add(this.gridHelper)
-
-    this.onMouseMove = this.onMouseMove.bind(this)
-    this.animate = this.animate.bind(this)
-    this.render = this.render.bind(this)
-    this.handleRaycast = this.handleRaycast.bind(this)
-
-    // Events
-    window.addEventListener('mousemove', this.onMouseMove, false)
-
-
-
-    this.animate()
+    this.drawGrid()
   }
 
-
-  onMouseMove(event: MouseEvent) {
-    this.mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
-    this.mouse.y = -(event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
-  }
-
-  resize() {
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
-    this.renderer.setPixelRatio(window.devicePixelRatio)
-    this.camera.aspect = window.innerWidth / window.innerHeight
-    this.camera.updateProjectionMatrix()
-  }
-
-  // update() {
-  //   const animate = () => {
-  //     requestAnimationFrame(animate);
-
-  //     this.orbitControls.update()
-
-  //     this.handleRaycast()
-
-  //     this.renderer.render(this.scene, this.camera);
-  //   }
-
-  //   animate()
-  // }
-
-  //   handleRaycast() {
-  //   // Raycaster
-  //   this.raycaster.setFromCamera(this.mouse, this.camera)
-  //   const intersects = this.raycaster.intersectObjects([this.gridHelper])
-  //   if (!intersects?.length) {
-  //     return;
-  //   }
-
-  //   const point = intersects[0]?.point.round()
-
-  //   if (point.isVector3 && this.previousPoint && point.equals(this.previousPoint)) {
-  //     return;
-  //   }
-
-  //   console.log(intersects)
-
-  //   this.previousPoint = point
-
-  //   console.log(point)
-
-  //   if (this.onIntersection) {
-  //     this.onIntersection(point, this.previousPoint)
-  //   }
-
-  // }
-
-  animate() {
-    requestAnimationFrame(this.animate)
-
-    this.render()
-    this.update()
+  save = () => {
 
   }
 
-  render() {
-    this.renderer.render(this.scene, this.camera)
-  }
-
-  update() {
-    this.resize()
-    this.handleRaycast()
-    // var delta = this.clock.getDelta()
-  }
-
-  handleRaycast() {
-    if (!this.onIntersection) {
-      return
-    }
-
-    this.raycaster.setFromCamera(this.mouse, this.camera)
-
-    this.raycaster
-      .intersectObjects(this.groundGrid)
-      .forEach(this.onIntersection)
-  }
-
-  onSave() {
-
-  }
-
-  onLoad() {
+  load = () => {
 
   }
 

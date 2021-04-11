@@ -16,5 +16,5 @@ export interface IMapLayer {
 
 export interface IGround {
   position: Vector3;
-  material: Material;
+  color: string;
 }

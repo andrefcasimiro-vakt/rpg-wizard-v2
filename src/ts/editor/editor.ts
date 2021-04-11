@@ -1,58 +1,180 @@
 import { BoxGeometry, Intersection, Mesh, MeshBasicMaterial, Vector3 } from "three";
+import { DatabaseActors } from "./components/database-actors";
 import { EntityEditor } from "./components/entity-editor";
+import { InputManager } from "./components/input-manager";
 import { MapEditor } from "./components/map-editor";
 import { SceneEditor } from "./components/scene-editor";
+import { ToolbarEditor } from "./components/toolbar-editor";
+import { Theme } from "./config/theme";
 import { IGround } from "./interfaces/IEntity";
+import { ToolbarMode } from "./interfaces/ToolbarMode";
+
+const NAVBAR_HEIGHT = 50
+const SIDEBAR_WIDTH = 300
+
+export const EditorKeys = {
+  PAINT_MODE: ['ShiftLeft'],
+}
 
 export class Editor {
+  // Editors
+  private toolbarEditor: ToolbarEditor;
   private entityEditor: EntityEditor;
   private mapEditor: MapEditor;
   private sceneEditor: SceneEditor;
 
+  // Managers
+  private inputManager: InputManager
+
+  // Database
+  private databaseActors: DatabaseActors
+
+  // Html Elements
+  private navbarUi: HTMLElement
   private sidebarUi: HTMLElement
 
   private brush: Mesh
+
+  private isPainting: boolean
+  private lastPaintedPosition: Vector3 = new Vector3()
   
   constructor() {
-    this.sidebarUi = document.createElement('div')
-    this.sidebarUi.style.position = 'absolute'
-    this.sidebarUi.style.display = 'flex'
-    this.sidebarUi.style.flexDirection = 'column'
-    this.sidebarUi.style.width = '300px'
-    this.sidebarUi.style.height = '100%'
-    this.sidebarUi.style.background = 'rgba(255, 255, 255, 0.2)'
-    this.sidebarUi.style.overflow = 'scroll'
-    document.body.appendChild(this.sidebarUi)
+    this.drawGui()
+    this.toolbarEditor = new ToolbarEditor(this.navbarUi)
+    this.toolbarEditor.onSave = this.onSave
+    this.toolbarEditor.onLoad = this.onLoad
 
     this.entityEditor = new EntityEditor(this.sidebarUi)
+
+    // Map Editor
     this.mapEditor = new MapEditor(this.sidebarUi)   
-    this.sceneEditor = new SceneEditor()
+    this.mapEditor.onMapSelection = this.onMapSelection
+
+    this.sceneEditor = new SceneEditor(this.mapEditor)
+
+    // Managers
+    this.inputManager = new InputManager();
+    this.inputManager.onKeyPressedChange = this.handleKeys;
+
+    // Database
+    this.databaseActors = new DatabaseActors()
 
     // Add brush to scene
-    this.brush = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial({ color: 'red' }))
-    this.brush.visible = true
-    this.sceneEditor.scene.add(this.brush)
+    this.renderBrush()
 
-    this.onEntityChange = this.onEntityChange.bind(this)
-    this.onIntersection = this.onIntersection.bind(this)
-
+    // Event Listeners
     this.entityEditor.onEntityChange = this.onEntityChange
     this.sceneEditor.onIntersection = this.onIntersection
   }
 
-  onEntityChange() {
-    const ground = this.entityEditor.selectedEntity as IGround
-
-    // @ts-ignore
-    this.placeholderEntityMesh.material.color.set(ground.color || 'yellow')
+  renderBrush = () => {
+    this.brush = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial({ color: 'red' }))
+    this.brush.visible = true
+    this.sceneEditor.scene.add(this.brush)
   }
 
-  onIntersection(intersection: Intersection) {
+  // UI
+  drawGui = () => {
+    this.navbarUi = document.createElement('nav')
+    const navStyle = this.navbarUi.style
+    navStyle.position = 'absolute'
+    navStyle.top = '0'
+    navStyle.height = `${NAVBAR_HEIGHT}px`
+    navStyle.display = 'flex'
+    navStyle.width = '100%'
+
+    document.body.appendChild(this.navbarUi)
+
+    this.sidebarUi = document.createElement('div')
+
+    const style = this.sidebarUi.style
+    style.position = 'absolute'
+    style.display = 'flex'
+    style.flexDirection = 'column'
+    style.width = `${SIDEBAR_WIDTH}px`
+    style.paddingLeft = `5px`
+    style.paddingRight = `5px`
+    style.height = `calc(100% - ${NAVBAR_HEIGHT}px)`
+    style.background = `${Theme.NEUTRAL}`
+    style.borderRight = `1px solid ${Theme.PRIMARY_DARK}`
+    style.overflow = 'scroll'
+    style.top = `${NAVBAR_HEIGHT + 1}px`
+    
+    document.body.appendChild(this.sidebarUi)
+  }
+
+  onEntityChange = () => {
+    const ground = this.entityEditor.currentEntity as IGround
+
+    if (ground) {
+      this.brush.material = new MeshBasicMaterial({ color: ground.color })
+    }
+  }
+
+  onMapSelection = () => {
+    this.mapEditor.commitCurrentMapChanges()
+
+    this.sceneEditor.redrawScene()
+  }
+
+  onIntersection = (intersection: Intersection) => {
     var intersectionPosition = intersection.point.round()
-    console.log('intersection: ', intersection)
-    // @ts-ignore
-    this.brush.material.color.set(this.entityEditor.selectedEntity?.color || 'yellow')
+
+    const ground = this.entityEditor.currentEntity as IGround
+    if (ground) {
+      this.brush.material = new MeshBasicMaterial({ color: ground.color })
+    }
+
     var nextPosition = intersectionPosition.clone()
     this.brush.position.set(nextPosition.x, nextPosition.y, nextPosition.z)
+
+    if (nextPosition?.equals(this?.lastPaintedPosition)) {
+      return
+    }
+
+    if (
+      this.isPainting
+      && this.entityEditor.currentEntity
+      && this.mapEditor.currentMap
+    ) {
+
+      this.mapEditor.paintMap({
+        position: nextPosition,
+        color: ground?.color,
+      })
+
+      this.lastPaintedPosition = nextPosition
+      this.sceneEditor.redrawScene()
+    }
   }
+
+  handleKeys = (keysPressed: string[]) => {
+    this.handlePaintMode(keysPressed)
+  }
+
+  handlePaintMode = (keysPressed: string[]) => {
+    const allKeysPressed = EditorKeys.PAINT_MODE.every(key => keysPressed.includes(key))
+
+    if (!allKeysPressed) {
+      this.isPainting = false
+      return;
+    }
+
+    if (this.toolbarEditor.mode !== ToolbarMode.DRAW) {
+      this.toolbarEditor.mode = ToolbarMode.DRAW
+    }
+
+    if (!this.isPainting) {
+      this.isPainting = true
+    }
+  }
+
+  onSave = () => {
+    this.mapEditor.save()
+  }
+
+  onLoad = () => {
+    this.mapEditor.load()
+  }
+
 }
