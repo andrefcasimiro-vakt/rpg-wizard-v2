@@ -7,14 +7,15 @@ export interface IMap {
 
   layers: IMapLayer[];
 
-  children?: IMap[];
+  /** Is the map a child of another map? */
+  parentUuid?: string;
 }
 
 export interface IMapLayer {
-  grounds: IGround[];
+  grounds: IMapGround[];
 }
 
-export interface IGround {
+export interface IMapGround {
   position: Vector3;
   color: string;
 }

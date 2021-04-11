@@ -1,6 +1,7 @@
 import { Theme } from "../config/theme";
 import { DatabaseIcon } from "../icons/database-icon";
 import { EventModeIcon } from "../icons/event-mode-icon";
+import { FillIcon } from "../icons/fill-icon";
 import { LoadIcon } from "../icons/load-icon";
 import { PencilIcon } from "../icons/pencil-icon";
 import { SaveIcon } from "../icons/save-icon";
@@ -59,6 +60,7 @@ export class ToolbarEditor implements IEditor {
     this.toolbarPanelGUI.appendChild(this.createButton('Load', LoadIcon(1.5), this.load))
     this.toolbarPanelGUI.appendChild(this.createButton('Database', DatabaseIcon(1.5), this.openDatabase))
 
+    // Paint BTN
     const paintBtn = this.createButton(
       'Paint Mode (Left Shift)',
       PencilIcon(1.5),
@@ -67,6 +69,16 @@ export class ToolbarEditor implements IEditor {
     paintBtn.style.opacity = this.mode === ToolbarMode.DRAW ? '1' : '.5'
     this.toolbarPanelGUI.appendChild(paintBtn)
 
+    // Event BTN
+    const fillBtn = this.createButton(
+      'Fill Mode',
+      FillIcon(1.5),
+      this.fillMode,
+    )
+    fillBtn.style.opacity = this.mode === ToolbarMode.FILL ? '1' : '.5'
+    this.toolbarPanelGUI.appendChild(fillBtn)
+
+    // Event BTN
     const eventBtn = this.createButton(
       'Event Mode',
       EventModeIcon(1.5),
@@ -117,6 +129,14 @@ export class ToolbarEditor implements IEditor {
     }
 
     this.mode = ToolbarMode.DRAW
+  }
+
+  fillMode = () => {
+    if (this.mode === ToolbarMode.FILL) {
+      return;
+    }
+
+    this.mode = ToolbarMode.FILL
   }
 
   eventMode = () => {

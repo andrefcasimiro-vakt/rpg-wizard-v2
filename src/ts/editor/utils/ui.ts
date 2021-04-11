@@ -9,7 +9,7 @@ export const createListPanelGUI = (height = 250) => {
   itemsPanelStyle.display = 'flex'
   itemsPanelStyle.flexDirection = 'row'
   itemsPanelStyle.flexWrap = 'wrap'
-  itemsPanelStyle.height = `${height}px`
+  itemsPanelStyle.maxHeight = `${height}px`
   itemsPanelStyle.padding = `5px`
   itemsPanelStyle.border = `1px solid ${Theme.PRIMARY_DARK}`
   itemsPanelStyle.borderBottom = 'none'

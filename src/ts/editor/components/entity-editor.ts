@@ -21,63 +21,8 @@ const grounds: IGround[] = [
   },
   {
     uuid: shortid.generate(),
-    name: 'ground',
-    color: 'green'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'dirt',
-    color: 'yellow'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'dirt',
-    color: 'yellow'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'dirt',
-    color: 'yellow'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'ground',
-    color: 'green'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'dirt',
-    color: 'yellow'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'ground',
-    color: 'green'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'dirt',
-    color: 'yellow'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'ground',
-    color: 'green'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'dirt',
-    color: 'yellow'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'ground',
-    color: 'green'
-  },
-  {
-    uuid: shortid.generate(),
-    name: 'dirt',
-    color: 'yellow'
+    name: 'stone',
+    color: 'grey'
   },
 
 ]

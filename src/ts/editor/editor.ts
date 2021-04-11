@@ -14,6 +14,7 @@ const SIDEBAR_WIDTH = 300
 
 export const EditorKeys = {
   PAINT_MODE: ['ShiftLeft'],
+  FILL: ['']
 }
 
 export class Editor {
@@ -55,6 +56,7 @@ export class Editor {
     // Managers
     this.inputManager = new InputManager();
     this.inputManager.onKeyPressedChange = this.handleKeys;
+    this.inputManager.onMouseClick = this.handleMouseClick;
 
     // Database
     this.databaseActors = new DatabaseActors()
@@ -111,9 +113,7 @@ export class Editor {
   }
 
   onMapSelection = () => {
-    this.mapEditor.commitCurrentMapChanges()
-
-    this.sceneEditor.redrawScene()
+    this.sceneEditor?.drawScene()
   }
 
   onIntersection = (intersection: Intersection) => {
@@ -126,7 +126,7 @@ export class Editor {
     }
 
     var nextPosition = intersectionPosition.clone()
-    this.brush.position.set(nextPosition.x, -0.49, nextPosition.z)
+    this.brush.position.set(nextPosition.x, 0.01, nextPosition.z)
 
     if (nextPosition?.equals(this?.lastPaintedPosition)) {
       return
@@ -135,16 +135,10 @@ export class Editor {
     if (
       this.isPainting
       && this.entityEditor.currentEntity
-      && this.mapEditor.currentMap
+      && this.mapEditor.getCurrentMapUuid()
     ) {
-
-      this.mapEditor.paintMap({
-        position: nextPosition,
-        color: ground?.color,
-      })
-
+      this.sceneEditor.drawScene({ queuedGround: { position: nextPosition, color: ground.color } })
       this.lastPaintedPosition = nextPosition
-      this.sceneEditor.redrawScene()
     }
   }
 
@@ -166,6 +160,21 @@ export class Editor {
 
     if (!this.isPainting) {
       this.isPainting = true
+    }
+  }
+
+  handleMouseClick = () => {
+    this.handleFillMode()
+  }
+
+  handleFillMode = () => {
+    if (this.toolbarEditor.mode !== ToolbarMode.FILL) {
+      return;
+    }
+
+    const ground = this.entityEditor.currentEntity as IGround
+    if (ground) {
+      this.sceneEditor.drawScene({ fillColor: ground.color })
     }
   }
 

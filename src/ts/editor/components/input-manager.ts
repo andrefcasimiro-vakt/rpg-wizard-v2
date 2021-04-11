@@ -17,9 +17,17 @@ export class InputManager {
 
   public onKeyPressedChange: (pressedKeys: string[]) => void;
 
+  public onMouseClick: () => void;
+
   constructor() {
     window.addEventListener('keydown', this.handleKeyDown)  
     window.addEventListener('keyup', this.handleKeyUp)  
+
+    window.addEventListener('mousedown', () => {
+      if (this.onMouseClick) {
+        this.onMouseClick()
+      }
+    })
   }
 
   handleKeyDown = (event: KeyboardEvent) => {

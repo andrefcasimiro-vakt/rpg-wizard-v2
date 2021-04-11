@@ -3,10 +3,10 @@ import { IEditor } from "src/ts/editor/interfaces/IEditor";
 import { Theme } from '../config/theme';
 import { AddIcon } from '../icons/add-icon';
 import { SubArrowIcon } from '../icons/sub-arrow-icon';
-import { IGround, IMap } from "../interfaces/IMap";
+import { IMapGround, IMap } from "../interfaces/IMap";
 import { createActionButtonGUI, createActionPanelGUI, createListPanelGUI } from '../utils/ui';
 
-export const CURRENT_MAP_STORAGE_KEY = `currentMap`
+export const CURRENT_MAP_UUID_STORAGE_KEY = `currentMapUuid`
 export const MAP_LIST_STORAGE_KEY = `maps`
 
 const MAP_LIST_HEIGHT = 220
@@ -15,76 +15,44 @@ const MAP_LIST_HEIGHT = 220
 // https://stackoverflow.com/questions/20306204/using-queryselector-with-ids-that-are-numbers
 const generateMapId = () =>  `map-${shortid.generate()}`
 
-export const defaultMaps = [
+const map2 = generateMapId()
+const map3 = generateMapId()
+export const defaultMaps: IMap[] = [
   {
     uuid: generateMapId(),
     name: 'Mapa 1',
     layers: [],
   },
   {
-    uuid: generateMapId(),
+    uuid: map2,
     name: 'Mapa 2',
     layers: [],
   },
   {
     uuid: generateMapId(),
-    name: 'Mapa 2',
+    name: 'Mapa 2 - Sub',
     layers: [],
-    children: [
-      {
-        uuid: generateMapId(),
-        name: 'Mapa 2',
-        layers: [],
-        children: [
-          {
-            uuid: generateMapId(),
-            name: 'Mapa 3 sub leveled',
-            layers: [],
-          },
-        ]
-      },
-      {
-        uuid: generateMapId(),
-        name: 'Mapa 2',
-        layers: [],
-      },
-    ]
+    parentUuid: map2,
+  },
+  {
+    uuid: generateMapId(),
+    name: 'Mapa 3-1',
+    layers: [],
+  },
+  {
+    uuid: map3,
+    name: 'Map3',
+    layers: [],
+    parentUuid: map2,
+  },
+  {
+    uuid: generateMapId(),
+    name: 'Sub Map of Map3',
+    layers: [],
+    parentUuid: map3,
   },
 ];
 export class MapEditor implements IEditor {
-  
-  // Map List
-  private _maps: IMap[]
-  
-  public get maps() {
-    return this._maps
-  }
-
-  public set maps(value: IMap[]) {
-    this._maps = value
-
-    // Redraw GUI
-    this.refreshButtonListGui()
-
-    this.scrollToItemGUI(value[value.length - 1].uuid)
-  }
-
-  // Current Map
-  private _currentMap: IMap
-  
-  public get currentMap() {
-    return this._currentMap
-  }
-
-  public set currentMap(value: IMap) {
-    this._currentMap = value
-
-    // Notify
-    this.onMapSelection()
-
-    // Redraw GUI
-    this.refreshButtonListGui()
-  }
 
   // GUI
   public uiContainer: HTMLElement;
@@ -113,6 +81,10 @@ export class MapEditor implements IEditor {
     guiPanelStyle.marginBottom = `10px`
 
     this.mapListPanel = createListPanelGUI(MAP_LIST_HEIGHT)
+    this.mapListPanel.style.flexFlow = 'column'
+    this.mapListPanel.style.flexDirection = 'column'
+    this.mapListPanel.style.height ='100%'
+
     this.guiPanel.appendChild(this.mapListPanel)
     
     this.refreshButtonListGui()
@@ -128,113 +100,152 @@ export class MapEditor implements IEditor {
 
   refreshButtonListGui = () => {
     this.mapListPanel.innerHTML = ''
-    this.renderMapListGui(this.maps)
+    this.renderMapListGui(this.getMaps())
   }
 
-  renderMapListGui = (mapsToRender: IMap[] = [], level: number = 0) => {    
+  renderMapListGui = (mapsToRender: IMap[] = []) => {   
+    const currentMapUuid = this.getCurrentMapUuid() 
+
     mapsToRender.forEach(map => {
-      const mapItemBtn = document.createElement('button')
-      mapItemBtn.innerHTML = `${level > 0 ? SubArrowIcon : ''}${map.name}`
-      mapItemBtn.id = map.uuid
+      const isActive = map.uuid === currentMapUuid
 
-      const mapItemBtnStyle = mapItemBtn.style
-      mapItemBtnStyle.marginLeft = `${level * 20}px`
-      mapItemBtnStyle.minWidth = '100%'
-      mapItemBtnStyle.cursor = 'pointer'
-      mapItemBtnStyle.display = 'flex'
-      mapItemBtnStyle.justifyContent = 'flex-start'
-      mapItemBtnStyle.alignItems = 'center'
-      mapItemBtnStyle.paddingLeft = `20px`
-      mapItemBtnStyle.height = `30px`
-      const isActive = map.uuid === this.currentMap?.uuid
-      mapItemBtnStyle.border = `1px solid ${isActive ? Theme.PRIMARY_DARK : Theme.NEUTRAL_DARKER}`
-      mapItemBtnStyle.background = isActive ? Theme.PRIMARY : Theme.LIGHT
+      const handleClick = () => {
+        this.save()
 
-      mapItemBtn.onclick = () => { this.currentMap = map }
+        this.setCurrentMapUuid(map.uuid)
 
-      this.mapListPanel.appendChild(mapItemBtn)
+        if (this.onMapSelection) {
+          this.onMapSelection();
+        }
+        
+        // Redraw GUI
+        this.refreshButtonListGui()
+      }
 
-      if (map.children?.length) {
-        this.renderMapListGui(map.children, level + 1)
+      const mapItem = document.createElement('li')
+      mapItem.style.display = 'flex'
+      mapItem.style.flexDirection = 'column'
+
+      const btn = document.createElement('button')
+      btn.innerHTML = `${map?.parentUuid ? SubArrowIcon : ''}${map.name}`
+      btn.id = map.uuid
+      btn.onclick = handleClick
+
+      const btnStyle = btn.style
+      btnStyle.minWidth = '100%'
+      btnStyle.cursor = 'pointer'
+      btnStyle.display = 'flex'
+      btnStyle.flexDirection = 'row'
+      btnStyle.justifyContent = 'flex-start'
+      btnStyle.position = 'relative'
+      btnStyle.alignItems = 'center'
+      btnStyle.paddingLeft = `20px`
+      btnStyle.height = `30px`
+      btnStyle.border = `1px solid ${isActive ? Theme.PRIMARY_DARK : Theme.NEUTRAL_DARKER}`
+      btnStyle.background = isActive ? Theme.PRIMARY : Theme.LIGHT
+
+      mapItem.appendChild(btn)
+
+      if (map?.parentUuid) {
+        // Get margin of parent element and add 20 px
+        const parent = this.mapListPanel.querySelector(`#${map.parentUuid}`) as HTMLButtonElement
+        const offset = Number(parent.style.marginLeft.replace('px', '')) + 20
+        const thisMapItemBtn = mapItem.childNodes[0] as HTMLButtonElement
+        thisMapItemBtn.style.marginLeft = `${offset}px`
+        parent.parentElement.appendChild(mapItem)
+      } else {
+        this.mapListPanel.appendChild(mapItem)
       }
     })
   }
 
   addMap = () => {
-    const updatedMaps = this.maps.slice()
+    const updatedMaps = this.getMaps().slice()
 
     updatedMaps.push(
       {
           uuid: generateMapId(),
-          name: `Map ${this.maps?.length + 1}`,
+          name: `Map ${updatedMaps?.length + 1}`,
           layers: [],
         }
     )
 
-    this.maps = updatedMaps
+    this.setMaps(updatedMaps)
 
     // On add map, set that new map as the current one
-    this.currentMap = this.maps[this.maps.length - 1]
-  }
-
-  paintMap = (ground: IGround) => {
-    if (!this.currentMap.layers?.length) {
-      this.currentMap.layers = [{ grounds: [] }]
-    }
-
-    const index = this.currentMap.layers?.[0]?.grounds.indexOf(ground)
-
-    if (index !== -1) {
-      this.currentMap.layers[0].grounds[index] = ground
-    } else {
-      this.currentMap.layers[0].grounds.push(ground)
-    }
-  }
-
-  commitCurrentMapChanges = () => {
-    this.findMapByUuid(this.currentMap.uuid, (map) => {
-      map = this.currentMap
-    })
-  }
-
-  findMapByUuid = (uuid: string, callback: (foundMap: IMap) => void, maps = this.maps) => {
-    for (const map of maps) {
-      if (map.uuid === uuid) {
-        callback(map)
-        break
-      }
-
-      if (map.children?.length) {
-        this.findMapByUuid(uuid, callback, map.children)
-      }
-    }
+    this.setCurrentMapUuid(updatedMaps[updatedMaps.length - 1].uuid)
   }
 
   scrollToItemGUI = (uuid: string) => {
+    if (!uuid) {
+      uuid = this.getMaps()?.[0]?.uuid
+    }
+
     // Scroll to last map on the list
     const targetElement = this.mapListPanel.querySelector(`#${uuid}`)
     targetElement.scrollIntoView()
   }
 
-  public save = () => {
-    const mapList = JSON.stringify(this.maps)
-    window.localStorage.setItem(MAP_LIST_STORAGE_KEY, mapList)
+  // Getters
 
-    const currentMap = JSON.stringify(this.currentMap)
-    window.localStorage.setItem(CURRENT_MAP_STORAGE_KEY, currentMap)
+  getMaps = (): IMap[] => {
+    return JSON.parse(window.localStorage.getItem(MAP_LIST_STORAGE_KEY)) || defaultMaps
   }
 
-  public load = () => {
-    const storageMaps = window.localStorage.getItem(MAP_LIST_STORAGE_KEY)
-    const maps: IMap[] = JSON.parse(storageMaps) || defaultMaps
-    this.maps = maps
+  getCurrentMap = (): IMap => {
+    return this.getMaps().find(map => map.uuid === this.getCurrentMapUuid())
+  }
 
-    const storageCurrentMap = window.localStorage.getItem(CURRENT_MAP_STORAGE_KEY)
-    const currentMap: IMap = JSON.parse(storageCurrentMap) || maps?.[0]
-    this.currentMap = currentMap
+  getCurrentMapUuid = (): string => {
+    return window.localStorage.getItem(CURRENT_MAP_UUID_STORAGE_KEY) || ''
+  }
 
-    if (this.currentMap) {
-      this.scrollToItemGUI(currentMap.uuid)
+  // Setters
+
+  setCurrentMapUuid = (uuid: string) => {
+    window.localStorage.setItem(CURRENT_MAP_UUID_STORAGE_KEY, uuid)
+
+  }
+
+  setMaps = (maps: IMap[]) => {
+    window.localStorage.setItem(MAP_LIST_STORAGE_KEY, JSON.stringify(maps))
+
+    const nextCurrentMapUuid = maps[maps.length - 1]?.uuid
+    this.setCurrentMapUuid(nextCurrentMapUuid)
+
+    // Update GUI
+    this.refreshButtonListGui()
+    this.scrollToItemGUI(nextCurrentMapUuid)
+  }
+
+  updateMap = (uuid: string, payload: Partial<IMap>) => {
+    const maps = this.getMaps()
+    
+    for (const map of maps) {
+      if (map.uuid === uuid) {
+        const index = maps.indexOf(map)
+
+        maps[index] = {
+          ...maps[index],
+          ...payload,
+        }
+
+        break
+      }
     }
+
+    window.localStorage.setItem(MAP_LIST_STORAGE_KEY, JSON.stringify(maps))
+  }
+
+  save = () => {    
+    const mapListPayload = JSON.stringify(this.getMaps())
+    window.localStorage.setItem(MAP_LIST_STORAGE_KEY, mapListPayload)
+
+    const currentMapPayload = JSON.stringify(this.getCurrentMapUuid())
+    window.localStorage.setItem(CURRENT_MAP_UUID_STORAGE_KEY, currentMapPayload)
+  }
+
+  load = () => {
+    this.scrollToItemGUI(this.getCurrentMapUuid())
   }
 }
