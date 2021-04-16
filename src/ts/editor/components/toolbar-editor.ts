@@ -6,8 +6,9 @@ import { LoadIcon } from "../icons/load-icon";
 import { PencilIcon } from "../icons/pencil-icon";
 import { SaveIcon } from "../icons/save-icon";
 import { IEditor } from "../interfaces/IEditor";
-import { ToolbarMode } from "../interfaces/ToolbarMode";
+import { ToolbarMode } from "../enums/ToolbarMode";
 import { DatabaseTabs } from "../utils/database";
+import { StartingPositionIcon } from "../icons/starting-position";
 
 export class ToolbarEditor implements IEditor {
   
@@ -30,8 +31,14 @@ export class ToolbarEditor implements IEditor {
   public set mode(value: ToolbarMode) {
     this._mode = value
 
+    if (this.onModeChange) {
+      this.onModeChange()
+    }
+
     this.refreshButtons()
   }
+
+  public onModeChange: () => void;
 
   constructor(uiContainer: HTMLElement) {
     this.uiContainer = uiContainer
@@ -62,7 +69,7 @@ export class ToolbarEditor implements IEditor {
 
     // Paint BTN
     const paintBtn = this.createButton(
-      'Paint Mode (Left Shift)',
+      'Paint Mode',
       PencilIcon(1.5),
       this.paintMode,
     )
@@ -70,13 +77,13 @@ export class ToolbarEditor implements IEditor {
     this.toolbarPanelGUI.appendChild(paintBtn)
 
     // Event BTN
-    const fillBtn = this.createButton(
-      'Fill Mode',
-      FillIcon(1.5),
-      this.fillMode,
-    )
-    fillBtn.style.opacity = this.mode === ToolbarMode.FILL ? '1' : '.5'
-    this.toolbarPanelGUI.appendChild(fillBtn)
+    // const fillBtn = this.createButton(
+    //   'Fill Mode',
+    //   FillIcon(1.5),
+    //   this.fillMode,
+    // )
+    // fillBtn.style.opacity = this.mode === ToolbarMode.FILL ? '1' : '.5'
+    // this.toolbarPanelGUI.appendChild(fillBtn)
 
     // Event BTN
     const eventBtn = this.createButton(
@@ -86,6 +93,15 @@ export class ToolbarEditor implements IEditor {
     )
     eventBtn.style.opacity = this.mode === ToolbarMode.EVENT ? '1' : '.5'
     this.toolbarPanelGUI.appendChild(eventBtn)
+
+    // Starting Position
+    const startingPositionBtn = this.createButton(
+      'Set player starting position',
+      StartingPositionIcon(1.5),
+      this.startingPositionMode,
+    )
+    startingPositionBtn.style.opacity = this.mode === ToolbarMode.STARTING_POSITION ? '1' : '.5'
+    this.toolbarPanelGUI.appendChild(startingPositionBtn)
   }
 
   createButton = (label: string, icon: string, onClick: () => void) => {
@@ -145,5 +161,13 @@ export class ToolbarEditor implements IEditor {
     }
 
     this.mode = ToolbarMode.EVENT
+  }
+
+  startingPositionMode = () => {
+    if (this.mode === ToolbarMode.STARTING_POSITION) {
+      return;
+    }
+
+    this.mode = ToolbarMode.STARTING_POSITION
   }
 }

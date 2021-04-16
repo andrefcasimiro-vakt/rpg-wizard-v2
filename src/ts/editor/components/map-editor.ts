@@ -3,7 +3,7 @@ import { IEditor } from "src/ts/editor/interfaces/IEditor";
 import { Theme } from '../config/theme';
 import { AddIcon } from '../icons/add-icon';
 import { SubArrowIcon } from '../icons/sub-arrow-icon';
-import { IMapGround, IMap } from "../interfaces/IMap";
+import { IMap } from "../interfaces/IMap";
 import { createActionButtonGUI, createActionPanelGUI, createListPanelGUI } from '../utils/ui';
 
 export const CURRENT_MAP_UUID_STORAGE_KEY = `currentMapUuid`
@@ -172,6 +172,13 @@ export class MapEditor implements IEditor {
 
     this.setMaps(updatedMaps)
 
+    const nextCurrentMapUuid = updatedMaps[updatedMaps.length - 1]?.uuid
+    this.setCurrentMapUuid(nextCurrentMapUuid)
+
+    // Update GUI
+    this.refreshButtonListGui()
+    this.scrollToItemGUI(nextCurrentMapUuid)
+
     // On add map, set that new map as the current one
     this.setCurrentMapUuid(updatedMaps[updatedMaps.length - 1].uuid)
   }
@@ -204,18 +211,10 @@ export class MapEditor implements IEditor {
 
   setCurrentMapUuid = (uuid: string) => {
     window.localStorage.setItem(CURRENT_MAP_UUID_STORAGE_KEY, uuid)
-
   }
 
   setMaps = (maps: IMap[]) => {
     window.localStorage.setItem(MAP_LIST_STORAGE_KEY, JSON.stringify(maps))
-
-    const nextCurrentMapUuid = maps[maps.length - 1]?.uuid
-    this.setCurrentMapUuid(nextCurrentMapUuid)
-
-    // Update GUI
-    this.refreshButtonListGui()
-    this.scrollToItemGUI(nextCurrentMapUuid)
   }
 
   updateMap = (uuid: string, payload: Partial<IMap>) => {
@@ -237,6 +236,28 @@ export class MapEditor implements IEditor {
     window.localStorage.setItem(MAP_LIST_STORAGE_KEY, JSON.stringify(maps))
   }
 
+  clearStartingPosition = () => {
+    const maps = this.getMaps()
+
+    for (const map of maps) {
+      let hasFound = false
+
+      for (const layer of map.layers) {
+        if (layer?.startingPosition != null) {
+          layer.startingPosition = null
+        }
+      }
+
+      if (hasFound) {
+        break;
+      }
+    }
+
+    this.setMaps(maps)
+  }
+
+  // This has become useless now that we are syncing with storage all the time
+  // In the future when we have json export we use Editor.ts to handle the json generation of the whole project
   save = () => {    
     const mapListPayload = JSON.stringify(this.getMaps())
     window.localStorage.setItem(MAP_LIST_STORAGE_KEY, mapListPayload)

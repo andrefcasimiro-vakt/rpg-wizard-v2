@@ -17,15 +17,29 @@ export class InputManager {
 
   public onKeyPressedChange: (pressedKeys: string[]) => void;
 
-  public onMouseClick: () => void;
+  public onMouseDown: (mouseEvent?: MouseEvent) => void;
+  public onMouseUp: () => void;
+  public onDoubleClick: (mouseEvent: MouseEvent) => void;
 
   constructor() {
     window.addEventListener('keydown', this.handleKeyDown)  
     window.addEventListener('keyup', this.handleKeyUp)  
 
-    window.addEventListener('mousedown', () => {
-      if (this.onMouseClick) {
-        this.onMouseClick()
+    window.addEventListener('mousedown', (mouseEvent) => {
+      if (this.onMouseDown) {
+        this.onMouseDown(mouseEvent)
+      }
+    })
+
+    window.addEventListener('mouseup', () => {
+      if (this.onMouseUp) {
+        this.onMouseUp()
+      }
+    })
+
+    window.addEventListener('dblclick', (mouseEvent) => {
+      if (this.onDoubleClick) {
+        this.onDoubleClick(mouseEvent)
       }
     })
   }

@@ -7,14 +7,14 @@ import { SceneEditor } from "./components/scene-editor";
 import { ToolbarEditor } from "./components/toolbar-editor";
 import { Theme } from "./config/theme";
 import { IGround } from "./interfaces/IEntity";
-import { ToolbarMode } from "./interfaces/ToolbarMode";
+import { ToolbarMode } from "./enums/ToolbarMode";
+import shortid = require("shortid");
 
 const NAVBAR_HEIGHT = 50
 const SIDEBAR_WIDTH = 300
 
 export const EditorKeys = {
   PAINT_MODE: ['ShiftLeft'],
-  FILL: ['']
 }
 
 export class Editor {
@@ -34,9 +34,9 @@ export class Editor {
   private navbarUi: HTMLElement
   private sidebarUi: HTMLElement
 
-  private brush: Mesh
-
+  // Scene
   private isPainting: boolean
+  private brush: Mesh
   private lastPaintedPosition: Vector3 = new Vector3()
   
   constructor() {
@@ -44,6 +44,7 @@ export class Editor {
     this.toolbarEditor = new ToolbarEditor(this.navbarUi)
     this.toolbarEditor.onSave = this.onSave
     this.toolbarEditor.onLoad = this.onLoad
+    this.toolbarEditor.onModeChange = this.onModeChange
 
     this.entityEditor = new EntityEditor(this.sidebarUi)
 
@@ -51,25 +52,24 @@ export class Editor {
     this.mapEditor = new MapEditor(this.sidebarUi)   
     this.mapEditor.onMapSelection = this.onMapSelection
 
-    this.sceneEditor = new SceneEditor(this.mapEditor)
+    this.sceneEditor = new SceneEditor(this.mapEditor, this.toolbarEditor)
 
     // Managers
     this.inputManager = new InputManager();
     this.inputManager.onKeyPressedChange = this.handleKeys;
-    this.inputManager.onMouseClick = this.handleMouseClick;
 
     // Database
     this.databaseActors = new DatabaseActors()
 
     // Add brush to scene
-    this.renderBrush()
+    this.initBrush()
 
     // Event Listeners
     this.entityEditor.onEntityChange = this.onEntityChange
     this.sceneEditor.onIntersection = this.onIntersection
   }
 
-  renderBrush = () => {
+  initBrush = () => {
     this.brush = new Mesh(new BoxGeometry(1, 1, 1), new MeshBasicMaterial({ color: 'red' }))
     this.brush.visible = true
   }
@@ -120,8 +120,11 @@ export class Editor {
     this.sceneEditor.scene.add(this.brush)
 
     var intersectionPosition = intersection.point.round()
+
     const ground = this.entityEditor.currentEntity as IGround
-    if (ground) {
+    if (this.toolbarEditor.mode === ToolbarMode.EVENT) {
+      this.brush.material = new MeshBasicMaterial({ color: 'purple' })
+    } else if (ground) {
       this.brush.material = new MeshBasicMaterial({ color: ground.color })
     }
 
@@ -132,50 +135,43 @@ export class Editor {
       return
     }
 
-    if (
-      this.isPainting
-      && this.entityEditor.currentEntity
-      && this.mapEditor.getCurrentMapUuid()
-    ) {
+    // Starting Position Mode
+    if (this.isPainting && this.toolbarEditor.mode === ToolbarMode.STARTING_POSITION) {
+      this.mapEditor.clearStartingPosition()
+      this.sceneEditor.drawScene({ queuedStartingPosition: nextPosition })
+      this.lastPaintedPosition = nextPosition
+      return;
+    }
+
+
+    // Event Mode
+    if (this.isPainting && this.toolbarEditor.mode === ToolbarMode.EVENT) {
+      this.sceneEditor.drawScene({ queuedEvent: { position: nextPosition, eventUuid: shortid.generate() } })
+      this.lastPaintedPosition = nextPosition
+      return;
+    }
+
+    // Fill Mode
+    if (this.toolbarEditor.mode === ToolbarMode.FILL) {      
+      this.sceneEditor.drawScene({ fillColor: ground.color })
+      return;
+    }
+
+    // Paint Mode
+    if (this.isPainting && this.toolbarEditor.mode === ToolbarMode.DRAW) {      
       this.sceneEditor.drawScene({ queuedGround: { position: nextPosition, color: ground.color } })
       this.lastPaintedPosition = nextPosition
     }
   }
 
   handleKeys = (keysPressed: string[]) => {
-    this.handlePaintMode(keysPressed)
+    const isPainting = EditorKeys.PAINT_MODE.every(key => keysPressed.includes(key))
+
+    this.isPainting = isPainting
   }
 
-  handlePaintMode = (keysPressed: string[]) => {
-    const allKeysPressed = EditorKeys.PAINT_MODE.every(key => keysPressed.includes(key))
-
-    if (!allKeysPressed) {
-      this.isPainting = false
-      return;
-    }
-
-    if (this.toolbarEditor.mode !== ToolbarMode.DRAW) {
-      this.toolbarEditor.mode = ToolbarMode.DRAW
-    }
-
-    if (!this.isPainting) {
-      this.isPainting = true
-    }
-  }
-
-  handleMouseClick = () => {
-    this.handleFillMode()
-  }
-
-  handleFillMode = () => {
-    if (this.toolbarEditor.mode !== ToolbarMode.FILL) {
-      return;
-    }
-
-    const ground = this.entityEditor.currentEntity as IGround
-    if (ground) {
-      this.sceneEditor.drawScene({ fillColor: ground.color })
-    }
+  onModeChange = () => {
+    this.sceneEditor.drawScene()
   }
 
   onSave = () => {

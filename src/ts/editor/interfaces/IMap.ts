@@ -1,4 +1,5 @@
 import { Material, Vector3 } from "three";
+import { IMapLayer } from "./IMapLayer";
 
 export interface IMap {
   uuid: string;
@@ -11,11 +12,3 @@ export interface IMap {
   parentUuid?: string;
 }
 
-export interface IMapLayer {
-  grounds: IMapGround[];
-}
-
-export interface IMapGround {
-  position: Vector3;
-  color: string;
-}

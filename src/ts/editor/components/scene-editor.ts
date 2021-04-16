@@ -1,9 +1,11 @@
-import { AmbientLight, AxesHelper, BackSide, BoxGeometry, GridHelper, ImageUtils, Intersection, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, PlaneGeometry, PointLight, Ray, Raycaster, RepeatWrapping, Scene, Texture, TextureLoader, Vector2, Vector3, WebGLRenderer } from "three";
-import { IEditor } from "../interfaces/IEditor";
+import { AxesHelper, BackSide, BoxGeometry, GridHelper, ImageUtils, Intersection, Mesh, MeshBasicMaterial, Object3D, PerspectiveCamera, PlaneGeometry, PointLight, Ray, Raycaster, RepeatWrapping, Scene, Texture, TextureLoader, Vector2, Vector3, WebGLRenderer } from "three";
 import { OrbitControls } from '../../../lib/orbitControls'
 import { MapEditor } from "./map-editor";
-import { IMapGround } from "../interfaces/IMap";
 import _ = require("lodash");
+import { IMapEvent } from "../interfaces/IMapEvent";
+import { ToolbarEditor } from "./toolbar-editor";
+import { ToolbarMode } from "../enums/ToolbarMode";
+import { IMapGround } from "../interfaces/IMapGround";
 
 // Cache
 var skyboxGeometry = new BoxGeometry(1000, 1000, 1000)
@@ -16,32 +18,28 @@ axis.position.y = 0.01
 var light = new PointLight(0xffffff)
 light.position.set(100, 250, 100)
 
-export class SceneEditor implements IEditor {
+export class SceneEditor {
 
   public scene: Scene
-
   public camera: PerspectiveCamera
-
   public renderer: WebGLRenderer
-
   private orbitControls: OrbitControls
-
   private raycaster: Raycaster = new Raycaster()
   private mouse: Vector2 = new Vector2()
 
   public onIntersection: (intersection: Intersection) => void;
 
+  // Dependencies
   private mapEditor: MapEditor
+  private toolbarEditor: ToolbarEditor
 
   // Grid
   private squareT: Texture;
   private basePlane: Mesh;
 
-  constructor(
-    mapEditor: MapEditor
-  ) {
+  constructor(mapEditor: MapEditor, toolbarEditor: ToolbarEditor) {
     this.mapEditor = mapEditor
-
+    this.toolbarEditor = toolbarEditor
     this.scene = new Scene()
 
     // Camera
@@ -51,7 +49,6 @@ export class SceneEditor implements IEditor {
     var ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT
     var NEAR = 0.1
     var FAR = 2000
-
     this.camera = new PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR)
     this.camera.position.z = 5
 
@@ -76,7 +73,6 @@ export class SceneEditor implements IEditor {
     window.addEventListener('mousemove', this.onMouseMove, false)
 
     this.animate()
-
     this.drawScene()
   }
 
@@ -125,36 +121,87 @@ export class SceneEditor implements IEditor {
     }
   }
 
-  drawScene = (options?: { queuedGround?: IMapGround, fillColor?: string }) => {
+  drawScene = (options?: {
+    queuedGround?: IMapGround,
+    queuedEvent?: IMapEvent,
+    queuedStartingPosition?: Vector3,
+    fillColor?: string
+  }) => {
     this.clearScene()
     
     let width = 50
     let depth = 50
 
-    const currentMapGrounds = this.mapEditor.getCurrentMap()?.layers?.[0]?.grounds || []
+    const currentMapLayer = this.mapEditor.getCurrentMap()?.layers?.[0]
+    const currentMapGrounds = currentMapLayer?.grounds || []
+    const currentMapEvents = currentMapLayer?.events || []
+    const startingPosition = currentMapLayer?.startingPosition || null
     const groundMesh = new Mesh(new BoxGeometry(1, 1, 1))
 
     const sceneChildren: Mesh[] = []
+
+    let mapStartingPosition: Vector3 | null = null
     const mapGrounds: IMapGround[] = []
+    const mapEvents: IMapEvent[] = []
 
     for (let i = -width / 2; i < width / 2; i++) {
       for (let j = -depth / 2; j < depth / 2; j++) {
         var entry: Mesh;
 
-        // Is filling entire grid?
-        const fillingColor = options?.fillColor
-        if (fillingColor) {
-          entry = this.basePlane.clone()
-          entry.material = new MeshBasicMaterial({ color: fillingColor })
-          entry.position.set(i, 0, j)
+        // -- STARTING POSITION ------------------------------------------------------------------------------------
 
-          mapGrounds.push({ position: entry.position, color: fillingColor })
-          sceneChildren.push(entry)
-          continue
+        // Has a starting position tile in queue to be painted
+        const queuedStartingPosition = options?.queuedStartingPosition
+        if (queuedStartingPosition?.x === i && queuedStartingPosition?.z === j) {
+          const startingPositionTile = this.getStartingPositionTile(i, j)
+          mapStartingPosition = queuedStartingPosition
+
+          if (this.toolbarEditor.mode === ToolbarMode.STARTING_POSITION || this.toolbarEditor.mode === ToolbarMode.EVENT) {
+            sceneChildren.push(startingPositionTile)
+          }
         }
 
+        // Has found a starting position tile
+        if (startingPosition != null && startingPosition.x === i && startingPosition.z === j) {
+          const startingPositionTile = this.getStartingPositionTile(i, j)
+          mapStartingPosition = startingPosition
+          if (this.toolbarEditor.mode === ToolbarMode.STARTING_POSITION || this.toolbarEditor.mode === ToolbarMode.EVENT) {
+            sceneChildren.push(startingPositionTile)
+          }
+        }
+
+        // -- EVENTS ------------------------------------------------------------------------------------
+
+        // Has event waiting to be painted at this position?
+        const queuedEventPosition = options?.queuedEvent?.position
+        if (queuedEventPosition?.x === i && queuedEventPosition?.z === j) {
+          const eventTile = this.getEventTile(i, j)
+
+          mapEvents.push({ position: eventTile.position, eventUuid: options?.queuedEvent.eventUuid })
+          
+          // Only render events if on EVENT MODE
+          if (this.toolbarEditor.mode === ToolbarMode.EVENT) {
+            sceneChildren.push(eventTile)
+          }
+        }
+
+        // Has found an already painted event
+        const paintedEvent = currentMapEvents.find((event) => event.position.x === i && event.position.z === j) 
+        if (paintedEvent) {
+          const eventTile = this.getEventTile(i, j)
+
+          mapEvents.push({ position: eventTile.position, eventUuid: paintedEvent.eventUuid })
+
+          // Only render events if on EVENT MODE
+          if (this.toolbarEditor.mode === ToolbarMode.EVENT) {
+            sceneChildren.push(eventTile)
+          }
+        }
+
+        // -- GROUNDS ------------------------------------------------------------------------------------
+
         // Has a ground waiting to be painted at this position?
-        const queuedPosition = options?.queuedGround.position
+        const queuedPosition = options?.queuedGround?.position
         if (queuedPosition?.x === i && queuedPosition?.z === j) {
           entry = this.basePlane.clone()
           entry.material = new MeshBasicMaterial({ color: options?.queuedGround.color })
@@ -186,28 +233,38 @@ export class SceneEditor implements IEditor {
 
     this.scene.add(...sceneChildren)
 
-    this.mapEditor.updateMap(this.mapEditor.getCurrentMapUuid(), {
-      layers: [{ grounds: mapGrounds }]
-    })
+    // TODO: Fix naming
+    this.mapEditor.updateMap(
+      this.mapEditor.getCurrentMapUuid(),
+      {
+        layers: [{ grounds: mapGrounds, events: mapEvents, startingPosition: mapStartingPosition }]
+      }
+    )
+  }
+
+  getStartingPositionTile = (x, z) => {
+    const entry = this.basePlane.clone()
+    entry.scale.set(.8, .8, .8)
+    entry.material = new MeshBasicMaterial({ color: 'orange', transparent: true, opacity: 0.9 })
+    entry.position.set(x, 0 + .8, z)
+    return entry
+  }
+
+  getEventTile = (x, z) => {
+    const entry = this.basePlane.clone()
+    entry.scale.set(.9, .9, .9)
+    entry.material = new MeshBasicMaterial({ color: 'purple', transparent: true, opacity: 0.9 })
+    entry.position.set(x, 0 + .5, z)
+    return entry
   }
 
   clearScene = () => {
     this.scene = new Scene()
 
     this.scene.add(skybox)
-
     this.scene.add(axis)
 
     // Ambient light
     this.scene.add(light)
   }
-
-  save = () => {
-
-  }
-
-  load = () => {
-
-  }
-
 }

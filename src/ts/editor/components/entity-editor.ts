@@ -6,7 +6,7 @@ import { createActionButtonGUI, createActionPanelGUI, createListPanelGUI } from 
 const GUI_PANEL_HEIGHT = 300
 const ITEM_PANEL_HEIGHT = 200
 
-type EntityType = 'ground' | 'walls' | 'props' | 'events'
+type EntityType = 'ground' | 'walls' | 'props'
 
 const grounds: IGround[] = [
   {
@@ -153,7 +153,6 @@ export class EntityEditor {
     this.actionsPanel.appendChild(this.createActionButtonGui('ground'))
     this.actionsPanel.appendChild(this.createActionButtonGui('walls'))
     this.actionsPanel.appendChild(this.createActionButtonGui('props'))
-    this.actionsPanel.appendChild(this.createActionButtonGui('events'))
   }
 
   createActionButtonGui(type: EntityType): HTMLButtonElement {
