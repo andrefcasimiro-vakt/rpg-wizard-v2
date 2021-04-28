@@ -1,16 +1,19 @@
 import { Editor } from "./editor/editor";
+import { World } from "./engine/entities/world";
 
 export class App {
-  private mode: 'game' | 'editor' = 'editor';
-  private editor: Editor;
 
   constructor() {
-    this.editor = new Editor();
+    if (window.location.search.includes('?mode=game')) {
+      new World()
+    } else {
+      new Editor();
+    }
 
-    this.init()
-  }
-
-  init() {
-
+    window.addEventListener('keyup', (evt) => {
+      if (evt.key === 'Escape') {
+        window.location.search = ''
+      }
+    })
   }
 }

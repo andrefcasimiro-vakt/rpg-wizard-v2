@@ -9,6 +9,7 @@ import { IEditor } from "../interfaces/IEditor";
 import { ToolbarMode } from "../enums/ToolbarMode";
 import { DatabaseTabs } from "../utils/database";
 import { StartingPositionIcon } from "../icons/starting-position";
+import { PlayIcon } from "../icons/play-icon";
 
 export class ToolbarEditor implements IEditor {
   
@@ -63,6 +64,15 @@ export class ToolbarEditor implements IEditor {
   refreshButtons = () => {
     this.toolbarPanelGUI.innerHTML = ''
 
+    // Play Mode Button
+    const playBtn = this.createButton(
+      'Play Mode',
+      PlayIcon(1.5),
+      () => window.location.assign('?mode=game') // window.open('?mode=game'),
+    )
+    this.toolbarPanelGUI.appendChild(playBtn)
+
+
     this.toolbarPanelGUI.appendChild(this.createButton('Save', SaveIcon(1.5), this.save))
     this.toolbarPanelGUI.appendChild(this.createButton('Load', LoadIcon(1.5), this.load))
     this.toolbarPanelGUI.appendChild(this.createButton('Database', DatabaseIcon(1.5), this.openDatabase))
@@ -102,6 +112,7 @@ export class ToolbarEditor implements IEditor {
     )
     startingPositionBtn.style.opacity = this.mode === ToolbarMode.STARTING_POSITION ? '1' : '.5'
     this.toolbarPanelGUI.appendChild(startingPositionBtn)
+
   }
 
   createButton = (label: string, icon: string, onClick: () => void) => {

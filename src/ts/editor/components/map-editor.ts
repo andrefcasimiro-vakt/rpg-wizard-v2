@@ -1,57 +1,17 @@
 import * as shortid from 'shortid'
 import { IEditor } from "src/ts/editor/interfaces/IEditor";
+import { CURRENT_MAP_UUID_STORAGE_KEY, getCurrentMapUuid, getMaps, MAP_LIST_STORAGE_KEY, setCurrentMapUuid, setMaps } from '../../storage/maps';
 import { Theme } from '../config/theme';
 import { AddIcon } from '../icons/add-icon';
 import { SubArrowIcon } from '../icons/sub-arrow-icon';
 import { IMap } from "../interfaces/IMap";
 import { createActionButtonGUI, createActionPanelGUI, createListPanelGUI } from '../utils/ui';
 
-export const CURRENT_MAP_UUID_STORAGE_KEY = `currentMapUuid`
-export const MAP_LIST_STORAGE_KEY = `maps`
-
 const MAP_LIST_HEIGHT = 220
 
 // shortid.generate() can create ids that start with numbers, which make querySelector by id invalid
 // https://stackoverflow.com/questions/20306204/using-queryselector-with-ids-that-are-numbers
 const generateMapId = () =>  `map-${shortid.generate()}`
-
-const map2 = generateMapId()
-const map3 = generateMapId()
-export const defaultMaps: IMap[] = [
-  {
-    uuid: generateMapId(),
-    name: 'Mapa 1',
-    layers: [],
-  },
-  {
-    uuid: map2,
-    name: 'Mapa 2',
-    layers: [],
-  },
-  {
-    uuid: generateMapId(),
-    name: 'Mapa 2 - Sub',
-    layers: [],
-    parentUuid: map2,
-  },
-  {
-    uuid: generateMapId(),
-    name: 'Mapa 3-1',
-    layers: [],
-  },
-  {
-    uuid: map3,
-    name: 'Map3',
-    layers: [],
-    parentUuid: map2,
-  },
-  {
-    uuid: generateMapId(),
-    name: 'Sub Map of Map3',
-    layers: [],
-    parentUuid: map3,
-  },
-];
 export class MapEditor implements IEditor {
 
   // GUI
@@ -100,11 +60,11 @@ export class MapEditor implements IEditor {
 
   refreshButtonListGui = () => {
     this.mapListPanel.innerHTML = ''
-    this.renderMapListGui(this.getMaps())
+    this.renderMapListGui(getMaps())
   }
 
   renderMapListGui = (mapsToRender: IMap[] = []) => {   
-    const currentMapUuid = this.getCurrentMapUuid() 
+    const currentMapUuid = getCurrentMapUuid() 
 
     mapsToRender.forEach(map => {
       const isActive = map.uuid === currentMapUuid
@@ -112,7 +72,7 @@ export class MapEditor implements IEditor {
       const handleClick = () => {
         this.save()
 
-        this.setCurrentMapUuid(map.uuid)
+        setCurrentMapUuid(map.uuid)
 
         if (this.onMapSelection) {
           this.onMapSelection();
@@ -160,7 +120,7 @@ export class MapEditor implements IEditor {
   }
 
   addMap = () => {
-    const updatedMaps = this.getMaps().slice()
+    const updatedMaps = getMaps().slice()
 
     updatedMaps.push(
       {
@@ -170,22 +130,22 @@ export class MapEditor implements IEditor {
         }
     )
 
-    this.setMaps(updatedMaps)
+    setMaps(updatedMaps)
 
     const nextCurrentMapUuid = updatedMaps[updatedMaps.length - 1]?.uuid
-    this.setCurrentMapUuid(nextCurrentMapUuid)
+    setCurrentMapUuid(nextCurrentMapUuid)
 
     // Update GUI
     this.refreshButtonListGui()
     this.scrollToItemGUI(nextCurrentMapUuid)
 
     // On add map, set that new map as the current one
-    this.setCurrentMapUuid(updatedMaps[updatedMaps.length - 1].uuid)
+    setCurrentMapUuid(updatedMaps[updatedMaps.length - 1].uuid)
   }
 
   scrollToItemGUI = (uuid: string) => {
     if (!uuid) {
-      uuid = this.getMaps()?.[0]?.uuid
+      uuid = getMaps()?.[0]?.uuid
     }
 
     // Scroll to last map on the list
@@ -193,32 +153,8 @@ export class MapEditor implements IEditor {
     targetElement.scrollIntoView()
   }
 
-  // Getters
-
-  getMaps = (): IMap[] => {
-    return JSON.parse(window.localStorage.getItem(MAP_LIST_STORAGE_KEY)) || defaultMaps
-  }
-
-  getCurrentMap = (): IMap => {
-    return this.getMaps().find(map => map.uuid === this.getCurrentMapUuid())
-  }
-
-  getCurrentMapUuid = (): string => {
-    return window.localStorage.getItem(CURRENT_MAP_UUID_STORAGE_KEY) || ''
-  }
-
-  // Setters
-
-  setCurrentMapUuid = (uuid: string) => {
-    window.localStorage.setItem(CURRENT_MAP_UUID_STORAGE_KEY, uuid)
-  }
-
-  setMaps = (maps: IMap[]) => {
-    window.localStorage.setItem(MAP_LIST_STORAGE_KEY, JSON.stringify(maps))
-  }
-
   updateMap = (uuid: string, payload: Partial<IMap>) => {
-    const maps = this.getMaps()
+    const maps = getMaps()
     
     for (const map of maps) {
       if (map.uuid === uuid) {
@@ -237,7 +173,7 @@ export class MapEditor implements IEditor {
   }
 
   clearStartingPosition = () => {
-    const maps = this.getMaps()
+    const maps = getMaps()
 
     for (const map of maps) {
       let hasFound = false
@@ -245,6 +181,8 @@ export class MapEditor implements IEditor {
       for (const layer of map.layers) {
         if (layer?.startingPosition != null) {
           layer.startingPosition = null
+          hasFound = true
+          break
         }
       }
 
@@ -253,20 +191,20 @@ export class MapEditor implements IEditor {
       }
     }
 
-    this.setMaps(maps)
+    setMaps(maps)
   }
 
   // This has become useless now that we are syncing with storage all the time
   // In the future when we have json export we use Editor.ts to handle the json generation of the whole project
   save = () => {    
-    const mapListPayload = JSON.stringify(this.getMaps())
+    const mapListPayload = JSON.stringify(getMaps())
     window.localStorage.setItem(MAP_LIST_STORAGE_KEY, mapListPayload)
 
-    const currentMapPayload = JSON.stringify(this.getCurrentMapUuid())
+    const currentMapPayload = JSON.stringify(getCurrentMapUuid())
     window.localStorage.setItem(CURRENT_MAP_UUID_STORAGE_KEY, currentMapPayload)
   }
 
   load = () => {
-    this.scrollToItemGUI(this.getCurrentMapUuid())
+    this.scrollToItemGUI(getCurrentMapUuid())
   }
 }

@@ -1,7 +1,11 @@
 export class UIManager {
 
   public static setLoadingScreenVisible(value: boolean) {
-    document.getElementById('loading-screen').style.display = value ? 'flex' : 'none'
-  }
+    const loadingScreenElement = document.getElementById('loading-screen')
+    if (!loadingScreenElement) {
+      return
+    }
 
+    loadingScreenElement.style.display = value ? 'flex' : 'none'
+  }
 }

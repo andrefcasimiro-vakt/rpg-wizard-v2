@@ -1,5 +1,6 @@
 import _ = require("lodash");
 import { Camera, MathUtils, Vector2, Vector3 } from "three";
+import { Character } from "../characters/character";
 import { World } from "../entities/world";
 import { IInputAction, IInputReceiver } from "../interfaces/IInputReceiver";
 import { IUpdatable } from "../interfaces/IUpdatable";
@@ -31,7 +32,7 @@ export class CameraOperator implements IInputReceiver, IUpdatable {
 
   public followMode = false
 
-  // public characterCaller: Character
+  public characterCaller: Character
 
   constructor(world: World, camera: Camera, sensitivityX: number = 1, sensitivityY: number = sensitivityX * 0.8) {
     this.world = world

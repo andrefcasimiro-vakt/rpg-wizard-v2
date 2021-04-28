@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, BoxGeometry, Clock, MathUtils, Mesh, Object3D, PCFSoftShadowMap, PerspectiveCamera, Scene, WebGLRenderer } from "three";
+import { ACESFilmicToneMapping, BackSide, BoxGeometry, Clock, MathUtils, Mesh, MeshBasicMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PointLight, Scene, WebGLRenderer } from "three";
 import { Sky } from "./sky";
 import * as CANNON from 'cannon'
 import { IUpdatable } from "../interfaces/IUpdatable";
@@ -7,8 +7,24 @@ import _ = require("lodash");
 import { InputManager } from "../core/input-manager";
 import { LoadingManager } from "../core/loading-manager";
 import { CameraOperator } from "../core/camera-operator";
+import { Vector3 } from "three";
+import { IMapGround } from "../../editor/interfaces/IMapGround";
+import { IMapEvent } from "../../editor/interfaces/IMapEvent";
+import { getCurrentMap, getStartingMap } from "../../storage/maps";
+import { OrbitControls } from '../../../lib/orbitControls'
+import { Character } from "../characters/character";
+import { getForward } from "../utils/function-library";
 
 const MOUSE_SENSITIVITY = 0.3
+
+// Cache
+var skyboxGeometry = new BoxGeometry(1000, 1000, 1000)
+var skyboxMaterial = new MeshBasicMaterial({ color: 0xffffee, side: BackSide })
+var skybox = new Mesh(skyboxGeometry, skyboxMaterial)
+
+var light = new PointLight(0xffffff)
+light.position.set(100, 250, 100)
+
 
 export class World {
   public renderer: WebGLRenderer
@@ -32,6 +48,8 @@ export class World {
   public loadingManager: LoadingManager
   public timeScaleTarget = 1
   public updatables: IUpdatable[] = []
+
+  public characters: Character[] = []
   
   private lastScenarioID: string
 
@@ -44,13 +62,15 @@ export class World {
     this.renderer.toneMappingExposure = 1.0
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = PCFSoftShadowMap
+    document.body.appendChild(this.renderer.domElement)
+
 
     window.addEventListener('resize', this.onWindowResize, false)
   
     // Scene
     this.graphicsWorld = new Scene()
     this.camera = new PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1010)
-  
+    this.camera.position.set(0, 2, 0)
     // Physics
     this.physicsWorld = new CANNON.World()
     this.physicsWorld.gravity.set(0, -9.81, 0)
@@ -75,6 +95,9 @@ export class World {
     this.cameraOperator = new CameraOperator(this, this.camera, MOUSE_SENSITIVITY)
     this.sky = new Sky(this)
 
+    new OrbitControls(this.camera, this.renderer.domElement)
+
+
     this.loadingManager = new LoadingManager(this)
 
     this.loadScene(sceneUuid)
@@ -90,11 +113,15 @@ export class World {
     })
 
     // Lerp time scale
-    this.params.Time_Scale = MathUtils.lerp(this.params.Time_Scale, this.timeScaleTarget, 0.2)
+  //  this.params['Time_Scale'] = MathUtils.lerp((this.params?.Time_Scale || 1), this.timeScaleTarget, 0.2)
   }
 
   updatePhysics = (timestep: number) => {
     this.physicsWorld.step(this.physicsFrameTime, timestep)
+
+    // this.characters.forEach(character => {
+    //   if (this.isOutOfBounds)
+    // })
   }
 
   render = (world: World) => {
@@ -106,7 +133,7 @@ export class World {
 
     // Getting time step
     let unscaledTimeStep = (this.requestDelta + this.renderDelta + this.logicDelta)
-    let timestep = unscaledTimeStep * this.params.Time_Scale
+    let timestep = unscaledTimeStep * 1 // (this.params?.Time_Scale || 1)
     timestep = Math.min(timestep, 1 / 30) // Minimum 30 fps
 
     // Logic
@@ -124,7 +151,7 @@ export class World {
   }
 
   setTimeScale = (value: number) => {
-    this.params.Time_Scale = value
+    // this.params['Time_Scale'] = value
     this.timeScaleTarget = value
   }
 
@@ -148,22 +175,85 @@ export class World {
   }
 
   loadScene = (sceneUuid: string) => {
-    const scene = new Object3D()
+    const scene = this.drawScene()
+
+
     // this.loadingManager.onFinishedCallback = () => {
     //   this.update(1, 1)
     //   this.setTimeScale(1)
     // }
 
-    // Load scene from storage and add physic colliders
+    this.update(1, 1)
 
+    // Load scene from storage and add physic colliders
     this.graphicsWorld.add(scene)
   }
 
-  clearEntities = () => {
-    
+  drawScene = (): Object3D => {
+      const scene = new Object3D()
+      let width = 50
+      let depth = 50
+  
+      const currentMapLayer = getStartingMap()?.layers?.[0]
+      const currentMapGrounds = currentMapLayer?.grounds || []
+      const currentMapEvents = currentMapLayer?.events || []
+      const startingPosition = currentMapLayer?.startingPosition || null
+      const groundMesh = new Mesh(new BoxGeometry(1, 1, 1))
+  
+      const sceneChildren: Mesh[] = []
+  
+      let mapStartingPosition: Vector3 | null = null
+      const mapGrounds: IMapGround[] = []
+      const mapEvents: IMapEvent[] = []
+  
+      for (let i = -width / 2; i < width / 2; i++) {
+        for (let j = -depth / 2; j < depth / 2; j++) {
+          var entry: Mesh;
+  
+          // Has found an already painted ground
+          const paintedGround = currentMapGrounds.find((ground) => ground.position.x === i && ground.position.z === j)
+          if (paintedGround) {
+            entry = groundMesh.clone()
+            entry.material = new MeshBasicMaterial({ color: paintedGround.color})
+            entry.position.set(i, 0, j)
+            mapGrounds.push({ position: entry.position, color: paintedGround.color })
+            sceneChildren.push(entry)
+            continue
+          }
+  
+          // // Nothing, draw the placeholder grid
+          // entry = this.basePlane.clone()
+          // entry.position.set(i, 0, j)
+          // sceneChildren.push(entry)
+        }
+      
+      }
+      scene.add(this.sky)
+      scene.add(light)
+      scene.add(...sceneChildren)
+
+      const initialPosition = currentMapLayer?.startingPosition || new Vector3(0, 0, 0)
+      this.spawnPlayer(initialPosition)
+
+      return scene
   }
 
-  
+  spawnPlayer = (initialPosition: Vector3) => {
+    this.loadingManager.loadGLTF('build/assets/boxman.glb', (model) => {
+      let player = new Character(model)
+      player.setPosition(initialPosition.x, initialPosition.y, initialPosition.z)
+
+      this.add(player)
+      player.takeControl()
+    })
+  }
+
+  clearEntities = () => {
+    for (let i = 0; i < this.characters.length; i++) {
+      this.remove(this.characters[i])
+      i--
+    }
+  }  
 
   onWindowResize = () => {
     this.camera.aspect = window.innerWidth / window.innerHeight

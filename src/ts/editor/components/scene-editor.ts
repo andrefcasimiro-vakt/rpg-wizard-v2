@@ -6,6 +6,7 @@ import { IMapEvent } from "../interfaces/IMapEvent";
 import { ToolbarEditor } from "./toolbar-editor";
 import { ToolbarMode } from "../enums/ToolbarMode";
 import { IMapGround } from "../interfaces/IMapGround";
+import { getCurrentMap, getCurrentMapUuid } from "../../storage/maps";
 
 // Cache
 var skyboxGeometry = new BoxGeometry(1000, 1000, 1000)
@@ -132,7 +133,7 @@ export class SceneEditor {
     let width = 50
     let depth = 50
 
-    const currentMapLayer = this.mapEditor.getCurrentMap()?.layers?.[0]
+    const currentMapLayer = getCurrentMap()?.layers?.[0]
     const currentMapGrounds = currentMapLayer?.grounds || []
     const currentMapEvents = currentMapLayer?.events || []
     const startingPosition = currentMapLayer?.startingPosition || null
@@ -233,9 +234,8 @@ export class SceneEditor {
 
     this.scene.add(...sceneChildren)
 
-    // TODO: Fix naming
     this.mapEditor.updateMap(
-      this.mapEditor.getCurrentMapUuid(),
+      getCurrentMapUuid(),
       {
         layers: [{ grounds: mapGrounds, events: mapEvents, startingPosition: mapStartingPosition }]
       }
