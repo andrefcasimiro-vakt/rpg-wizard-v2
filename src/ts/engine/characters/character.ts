@@ -10,9 +10,9 @@ import { CapsuleCollider } from "../physics/colliders/capsule-collider";
 import { RelativeSpringSimulator } from "../physics/spring-simulation/relative-spring-simulator";
 import { VectorSpringSimulator } from "../physics/spring-simulation/vector-spring-simulator";
 import { applyVectorMatrixXZ, cannonVector, getForward, getSignedAngleBetweenVectors, haveDifferentSigns, setupMeshProperties, threeVector } from "../utils/function-library";
-import { Idle } from "./character-states/idle";
 import { GroundImpactData } from "./ground-impact-data";
 import * as CANNON from 'cannon'
+import { Idle } from "./character-states";
 
 export class Character extends Object3D implements IWorldEntity {
   public entityType = EntityType.Character
@@ -239,16 +239,18 @@ export class Character extends Object3D implements IWorldEntity {
     //   this.controlledObject.handleKeyboardEvent(event, code, pressed)
     // }
 
-    // Free camera
-    if (code === 'KeyC' && pressed === true && event.shiftKey === true) {
-      this.resetControls()
+    // console.log('code: ', code)
 
-      this.world.cameraOperator.characterCaller = this
-      this.world.inputManager.setInputReceiver(this.world.cameraOperator)
-    } else if (code === 'KeyR' && pressed === true && event.shiftKey === true) {
-      // this.world.restartScenario()
-      return
-    }
+    // // Free camera
+    // if (code === 'KeyC' && pressed === true && event.shiftKey === true) {
+    //   this.resetControls()
+
+    //   this.world.cameraOperator.characterCaller = this
+    //   this.world.inputManager.setInputReceiver(this.world.cameraOperator)
+    // } else if (code === 'KeyR' && pressed === true && event.shiftKey === true) {
+    //   // this.world.restartScenario()
+    //   return
+    // }
 
     for (const action in this.actions) {
       if (this.actions.hasOwnProperty(action)) {
@@ -298,6 +300,7 @@ export class Character extends Object3D implements IWorldEntity {
         action.justReleased = true
       }
 
+
       // Tell player to handle states according to new input
       this.charState.onInputChange()
 
@@ -323,7 +326,7 @@ export class Character extends Object3D implements IWorldEntity {
     }
   }
 
-  update = (timeStep: number): void => {
+  public update(timeStep: number): void {
     this.behavior?.update(timeStep)
 
     this.charState?.update(timeStep)
@@ -387,7 +390,6 @@ export class Character extends Object3D implements IWorldEntity {
     // Simulator
     this.velocitySimulator.target.copy(this.velocityTarget)
     this.velocitySimulator.simulate(timeStep)
-
     // Update 
     this.velocity.copy(this.velocitySimulator.position)
     this.acceleration.copy(this.velocitySimulator.velocity)
@@ -491,9 +493,8 @@ export class Character extends Object3D implements IWorldEntity {
 
     // Take local velocity
     let arcadeVelocity = new Vector3().copy(character.velocity).multiplyScalar(character.moveSpeed)
-
-    // Turn local into global
-    arcadeVelocity = new Vector3().copy(character.velocity).multiplyScalar(character.moveSpeed)
+      // Turn local into global
+    arcadeVelocity = applyVectorMatrixXZ(character.orientation, arcadeVelocity)
 
     let newVelocity = new Vector3()
 
@@ -525,7 +526,7 @@ export class Character extends Object3D implements IWorldEntity {
     // If we're hitting the ground, stick to ground
     if (character.rayWasHit) {
       // Flatten velocity
-      newVelocity.y = 0
+      newVelocity.y = character.rayResult.hitPointWorld.y
 
       // Move on top of moving objects
       if (character.rayResult.body.mass > 0) {
@@ -536,20 +537,16 @@ export class Character extends Object3D implements IWorldEntity {
         newVelocity.add(threeVector(pointVelocity))
       }
 
-      // Measure the normal vector offset from direct 'up' vector and transform it into a matrix
-      let up = new Vector3(0, 1, 0)
-
-      let normal, q, m
-      {
-        const { x, y, z } = character.rayResult.hitNormalWorld
-        normal = new Vector3(x, y, z)
-        q = new Quaternion().setFromUnitVectors(up, normal)
-        m = new Matrix4().makeRotationFromQuaternion(q) 
-      }
+			// Measure the normal vector offset from direct "up" vector
+			// and transform it into a matrix
+			let up = new Vector3(0, 1, 0);
+			let normal = new Vector3(character.rayResult.hitNormalWorld.x, character.rayResult.hitNormalWorld.y, character.rayResult.hitNormalWorld.z);
+			let q = new Quaternion().setFromUnitVectors(up, normal);
+			let m = new Matrix4().makeRotationFromQuaternion(q);
 
       // Rotate the velocity vector
       newVelocity.applyMatrix4(m)
-
+		
       // Apply velocity
       body.velocity.x = newVelocity.x
       body.velocity.y = newVelocity.y

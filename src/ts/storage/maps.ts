@@ -11,6 +11,10 @@ export const getCurrentMap = (): IMap => {
   return getMaps().find(map => map.uuid === getCurrentMapUuid())
 }
 
+export const getMapByUuid = (mapUuid: string): IMap => {
+  return getMaps().find(map => map.uuid === mapUuid)
+}
+
 /**
  * Finds the map where the player spawn position is set
  */

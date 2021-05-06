@@ -1,7 +1,8 @@
 import _ = require("lodash");
-import { MeshPhongMaterial, Object3D, Vector3 } from "three";
+import { MeshPhongMaterial, Object3D, Quaternion, Vector3 } from "three";
 import { Space } from "../enums/space";
 import { SimulationFrame } from "../physics/spring-simulation/simulation-frame";
+import * as CANNON from 'cannon'
 
 // Mesh
 export function setupMeshProperties(child: any): void {
@@ -85,6 +86,8 @@ export function spring(source: number, destination: number, velocity: number, ma
 export function springV(source: Vector3, destination: Vector3, velocity: Vector3, mass: number, damping: number): void {
   let acceleration = new Vector3().subVectors(destination, source)
   acceleration.divideScalar(mass)
+  velocity.add(acceleration);
+
   velocity.multiplyScalar(damping)
   source.add(velocity)
 }
@@ -92,9 +95,9 @@ export function springV(source: Vector3, destination: Vector3, velocity: Vector3
 // Vectors
 export function applyVectorMatrixXZ(a: Vector3, b: Vector3): Vector3 {
   return new Vector3(
-    a.x * b.z + a.z * b.x,
+    (a.x * b.z + a.z * b.x),
     b.y,
-    a.z * b.z + -a.x * b.x
+    (a.z * b.z + (-a.x * b.x))
   )
 }
 
@@ -104,6 +107,10 @@ export function threeVector(vec: CANNON.Vec3): Vector3 {
 
 export function cannonVector(vec: Vector3): CANNON.Vec3 {
   return new CANNON.Vec3(vec.x, vec.y, vec.z)
+}
+
+export function cannonQuaternion(quat: Quaternion): CANNON.Quaternion {
+  return new CANNON.Quaternion(quat.x, quat.y, quat.z, quat.w)
 }
 
 export function getMatrix(obj: Object3D, space: Space) {

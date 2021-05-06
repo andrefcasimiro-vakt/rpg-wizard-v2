@@ -1,5 +1,6 @@
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { getSignedAngleBetweenVectors } from "../../utils/function-library";
+import { DropIdle, DropRolling, DropRunning, Falling, Sprint, StartWalk, StartWalkDirection, Walk } from ".";
 import { Character } from "../character";
 
 export abstract class CharacterStateBase implements ICharacterState {
@@ -26,30 +27,27 @@ export abstract class CharacterStateBase implements ICharacterState {
   }
 
   public onInputChange() {
-    console.log('hjey')
+
   }
 
-  noDirection = (): boolean =>
-    (this.character.actions.up.isPressed === false
-    && this.character.actions.down.isPressed === false
-    && this.character.actions.left.isPressed === false
-    && this.character.actions.right.isPressed === false)
+  public noDirection(): boolean {
+		return !this.character.actions.up.isPressed && !this.character.actions.down.isPressed && !this.character.actions.left.isPressed && !this.character.actions.right.isPressed;
 
-  anyDirection = (): boolean =>
-    (this.character.actions.up.isPressed === true
-      || this.character.actions.down.isPressed === true
-      || this.character.actions.left.isPressed === true
-      || this.character.actions.right.isPressed === true)
+  }
 
-  fallInAir = (): void => {
+  public anyDirection(): boolean {
+		return this.character.actions.up.isPressed || this.character.actions.down.isPressed || this.character.actions.left.isPressed || this.character.actions.right.isPressed;
+  }
+
+  public fallInAir(): void {
     if (!this.character.rayWasHit) {
-      // this.character.setState(
-      //   new Falling(this.character)
-      // )
+      this.character.setState(
+        new Falling(this.character)
+      )
     }
   }
 
-  animationHasEnded = (timeStep: number): boolean => {
+  public animationHasEnded(timeStep: number): boolean {
     if (this.character.mixer === undefined) {
       return true
     }
@@ -61,40 +59,40 @@ export abstract class CharacterStateBase implements ICharacterState {
     return this.timer > this.animationLength - timeStep
   }
 
-  setAppropriateDropState = () => {
+  public setAppropriateDropState() {
     if (this.character.groundImpactData.velocity.y < -6) {
-      // this.character.setState(new DropRolling(this.character))
+      this.character.setState(new DropRolling(this.character))
     } else if (this.anyDirection()) {
       if (this.character.groundImpactData.velocity.y < -2) {
-      // this.character.setState(new DropRunning(this.character))
+      this.character.setState(new DropRunning(this.character))
       } else {
 
         if (this.character.actions.run.isPressed) {
-          // this.character.setState(new Sprint(this.character))
+          this.character.setState(new Sprint(this.character))
         } else {
-          // this.character.setState(new Walk(this.character))
+          this.character.setState(new Walk(this.character))
         }
 
       }
     } else {
-     //this.character.setState(new DropIdle(this.character))
+     this.character.setState(new DropIdle(this.character))
     }
   }
 
-  setAppropriateStartWalkState = (): void => {
+  public setAppropriateStartWalkState(): void {
     let range = Math.PI
     let angle = getSignedAngleBetweenVectors(this.character.orientation, this.character.getCameraRelativeMovementVector())
 
     if (angle > range * 0.8) {
-      // this.character.setState(new StartWalkBackLeft(this.character))
+      this.character.setState(new StartWalk(this.character, StartWalkDirection.BackLeft))
     } else if (angle < -range * 0.8) {
-      // this.character.setState(new StartWalkBackRight(this.character))
+      this.character.setState(new StartWalk(this.character, StartWalkDirection.BackRight))
     } else if (angle > range * 0.3) {
-      // this.character.setState(new StartWalkLeft(this.character))
+      this.character.setState(new StartWalk(this.character, StartWalkDirection.Left))
     } else if (angle < -range * 0.3) {
-      // this.character.setState(new StartWalkRight(this.character))
+      this.character.setState(new StartWalk(this.character, StartWalkDirection.Right))
     } else {
-      // this.character.setState(new StartWalkForward(this.character))
+      this.character.setState(new StartWalk(this.character, StartWalkDirection.Forward))
     }
   }
 

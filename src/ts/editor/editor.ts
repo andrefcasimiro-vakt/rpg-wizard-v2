@@ -9,6 +9,8 @@ import { Theme } from "./config/theme";
 import { IGround } from "./interfaces/IEntity";
 import { ToolbarMode } from "./enums/ToolbarMode";
 import shortid = require("shortid");
+import { getCurrentMap } from "../storage/maps";
+import { EventEditor } from "./components/event-editor";
 
 const NAVBAR_HEIGHT = 50
 const SIDEBAR_WIDTH = 300
@@ -23,6 +25,7 @@ export class Editor {
   private entityEditor: EntityEditor;
   private mapEditor: MapEditor;
   private sceneEditor: SceneEditor;
+  private eventEditor: EventEditor;
 
   // Managers
   private inputManager: InputManager
@@ -61,12 +64,16 @@ export class Editor {
     // Database
     this.databaseActors = new DatabaseActors()
 
+    // Events
+    this.eventEditor = new EventEditor()
+
     // Add brush to scene
     this.initBrush()
 
     // Event Listeners
     this.entityEditor.onEntityChange = this.onEntityChange
     this.sceneEditor.onIntersection = this.onIntersection
+    this.sceneEditor.onDoubleClickIntersection = this.onDoubleClickIntersection
   }
 
   initBrush = () => {
@@ -116,6 +123,19 @@ export class Editor {
     this.sceneEditor?.drawScene()
   }
 
+  onDoubleClickIntersection = (intersection: Intersection) => {
+    var intersectionPosition = intersection.point.round()
+
+    const targetEvent = getCurrentMap().layers[0].events.find(evt => {
+      const pos = new Vector3(evt.position.x, evt.position.y, evt.position.z).round()
+      return pos.equals(intersectionPosition)
+    })
+
+    if (targetEvent) {
+      this.eventEditor.open(targetEvent.eventUuid)
+    }
+  }
+
   onIntersection = (intersection: Intersection) => {
     this.sceneEditor.scene.add(this.brush)
 
@@ -142,7 +162,6 @@ export class Editor {
       this.lastPaintedPosition = nextPosition
       return;
     }
-
 
     // Event Mode
     if (this.isPainting && this.toolbarEditor.mode === ToolbarMode.EVENT) {

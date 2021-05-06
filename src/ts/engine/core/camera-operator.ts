@@ -82,23 +82,23 @@ export class CameraOperator implements IInputReceiver, IUpdatable {
   }
 
   update = (timeScale: number) => {
-    if (this.followMode) {
-      this.camera.position.y = MathUtils.clamp(
-        this.camera.position.y, this.target.y, Number.POSITIVE_INFINITY
-      )
+    // if (this.followMode) {
+    //   this.camera.position.y = MathUtils.clamp(
+    //     this.camera.position.y, this.target.y, Number.POSITIVE_INFINITY
+    //   )
 
-      this.camera.lookAt(this.target)
+    //   this.camera.lookAt(this.target)
 
-      let newPos = this.target.clone().add(
-        new Vector3().subVectors(this.camera.position, this.target).normalize().multiplyScalar(this.targetRadius)
-      )
+    //   let newPos = this.target.clone().add(
+    //     new Vector3().subVectors(this.camera.position, this.target).normalize().multiplyScalar(this.targetRadius)
+    //   )
 
-      this.camera.position.x = newPos.x
-      this.camera.position.y = newPos.y
-      this.camera.position.z = newPos.z
+    //   this.camera.position.x = newPos.x
+    //   this.camera.position.y = newPos.y
+    //   this.camera.position.z = newPos.z
 
-      return
-    }
+    //   return
+    // }
 
     this.radius = MathUtils.lerp(this.radius, this.targetRadius, 0.1)
     
@@ -110,6 +110,12 @@ export class CameraOperator implements IInputReceiver, IUpdatable {
   }
 
   handleKeyboardEvent = (event: KeyboardEvent, code: string, pressed: boolean) => {
+    // if (this.characterCaller !== undefined)
+    // {
+    //   this.world.inputManager.setInputReceiver(this.characterCaller);
+    //   this.characterCaller = undefined;
+    // }
+
     for (const action in this.actions) {
       if (this.actions.hasOwnProperty(action)) {
         const binding = this.actions[action]
@@ -124,10 +130,6 @@ export class CameraOperator implements IInputReceiver, IUpdatable {
   handleMouseWheel = (event: WheelEvent, value: number) => {
   }
 
-  handleMouseMove = (event: MouseEvent, deltaX: number, deltaY: number) => {
-    this.move(deltaX, deltaY)
-  }
-
   handleMouseButton = (event: MouseEvent, code: string, pressed: boolean) => {
     for (const action in this.actions) {
       if (this.actions.hasOwnProperty(action)) {
@@ -138,6 +140,10 @@ export class CameraOperator implements IInputReceiver, IUpdatable {
         }
       }
     }
+  }
+
+  handleMouseMove = (event: MouseEvent, deltaX: number, deltaY: number) => {
+    this.move(deltaX, deltaY)
   }
 
   inputReceiverInit = () => {

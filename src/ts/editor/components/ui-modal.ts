@@ -11,8 +11,6 @@ export class UIModal {
 
   public set isOpen(value: boolean) {
     this._isOpen = value
-
-    this.render()
   }
 
   public hashParameter: string
@@ -32,8 +30,10 @@ export class UIModal {
     this.handleHashChange()
 
     window.onclick = (event) => {
-      if (event.target == this.modalContainer) {
-        this.isOpen = false
+        console.log(this.modalContainer)
+      if (event.target?.id == this.modalContainer?.id) {
+        console.log('closeeeeeeee')
+        this.close()
       }
     }
   }
@@ -41,9 +41,15 @@ export class UIModal {
   handleHashChange = () => {
     this.isOpen = includesHash(this.hashParameter)
 
-    if (this.onHashChange) {
-      this.onHashChange()
-    }
+    if (this.isOpen) {
+      this.render()
+
+
+      if (this.onHashChange) {
+        this.onHashChange()
+      }
+    } 
+
   }
 
   drawGui = () => {
@@ -73,17 +79,16 @@ export class UIModal {
   }
 
   render = () => {
-    if (!this.isOpen) {
-      this.close()
-      return
-    }
-
     this.modalContainer.style.display = 'flex'
   }
 
   close = () => {
     this.modalContainer.style.display = 'none'
+    console.log('this.hashParameter', this.hashParameter)
+    if (includesHash(this.hashParameter)) {
+      console.log('close!')
 
-    window.location.hash = ''
+      window.location.hash = ''
+    }
   }
 }

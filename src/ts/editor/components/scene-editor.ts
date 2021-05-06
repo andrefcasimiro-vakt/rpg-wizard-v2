@@ -29,6 +29,7 @@ export class SceneEditor {
   private mouse: Vector2 = new Vector2()
 
   public onIntersection: (intersection: Intersection) => void;
+  public onDoubleClickIntersection: (intersection: Intersection) => void;
 
   // Dependencies
   private mapEditor: MapEditor
@@ -51,7 +52,8 @@ export class SceneEditor {
     var NEAR = 0.1
     var FAR = 2000
     this.camera = new PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR)
-    this.camera.position.z = 5
+    this.camera.position.z = 10
+    this.camera.position.y = 5
 
     // Grid
     this.squareT = new TextureLoader().load('build/assets/square-thick.png')
@@ -72,9 +74,17 @@ export class SceneEditor {
 
     // Events
     window.addEventListener('mousemove', this.onMouseMove, false)
+    window.addEventListener('dblclick', this.onDoubleClick, false)
 
     this.animate()
     this.drawScene()
+  }
+
+  onDoubleClick = (event: MouseEvent) => {
+    this.mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
+    this.mouse.y = -(event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
+  
+    this.handleRaycast({ doubleClicked: true })
   }
 
   onMouseMove = (event: MouseEvent) => {
@@ -102,11 +112,9 @@ export class SceneEditor {
     this.handleRaycast()
   }
 
-  handleRaycast = () => {
-    if (!this.onIntersection) {
-      return
-    }
-
+  handleRaycast = (options?: {
+    doubleClicked?: boolean,
+  }) => {
     this.raycaster.setFromCamera(this.mouse, this.camera)
     
     const CURRENT_LAYER = 0
@@ -118,6 +126,11 @@ export class SceneEditor {
 
     // Capture the first intersection only
     if (intersections?.length) {
+      if (options?.doubleClicked) {
+        this.onDoubleClickIntersection(intersections[0])
+        return
+      }
+
       this.onIntersection(intersections[0])
     }
   }

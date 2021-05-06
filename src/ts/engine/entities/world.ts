@@ -5,15 +5,16 @@ import { IUpdatable } from "../interfaces/IUpdatable";
 import { IWorldEntity } from "../interfaces/IWorldEntity";
 import _ = require("lodash");
 import { InputManager } from "../core/input-manager";
-import { LoadingManager } from "../core/loading-manager";
 import { CameraOperator } from "../core/camera-operator";
 import { Vector3 } from "three";
 import { IMapGround } from "../../editor/interfaces/IMapGround";
 import { IMapEvent } from "../../editor/interfaces/IMapEvent";
-import { getCurrentMap, getStartingMap } from "../../storage/maps";
-import { OrbitControls } from '../../../lib/orbitControls'
+import { getCurrentMap, getCurrentMapUuid, getStartingMap } from "../../storage/maps";
+// import { OrbitControls } from '../../../lib/orbitControls'
 import { Character } from "../characters/character";
 import { getForward } from "../utils/function-library";
+import { Scenario } from "./scenario";
+import { CannonDebugRenderer } from '../../../lib/cannon/CannonDebugRenderer'
 
 const MOUSE_SENSITIVITY = 0.3
 
@@ -21,10 +22,6 @@ const MOUSE_SENSITIVITY = 0.3
 var skyboxGeometry = new BoxGeometry(1000, 1000, 1000)
 var skyboxMaterial = new MeshBasicMaterial({ color: 0xffffee, side: BackSide })
 var skybox = new Mesh(skyboxGeometry, skyboxMaterial)
-
-var light = new PointLight(0xffffff)
-light.position.set(100, 250, 100)
-
 
 export class World {
   public renderer: WebGLRenderer
@@ -45,13 +42,18 @@ export class World {
   public params: any
   public inputManager: InputManager
   public cameraOperator: CameraOperator
-  public loadingManager: LoadingManager
   public timeScaleTarget = 1
   public updatables: IUpdatable[] = []
+
+  public scenario: Scenario = null
 
   public characters: Character[] = []
   
   private lastScenarioID: string
+
+  private cannonDebugRenderer: CannonDebugRenderer
+
+  private debugPhysics: boolean = true
 
   constructor(sceneUuid?: string) {
     // Renderer
@@ -95,12 +97,12 @@ export class World {
     this.cameraOperator = new CameraOperator(this, this.camera, MOUSE_SENSITIVITY)
     this.sky = new Sky(this)
 
-    new OrbitControls(this.camera, this.renderer.domElement)
-
-
-    this.loadingManager = new LoadingManager(this)
+    this.cannonDebugRenderer = new CannonDebugRenderer( this.graphicsWorld, this.physicsWorld );
+ 
+    // new OrbitControls(this.camera, this.renderer.domElement)
 
     this.loadScene(sceneUuid)
+
     this.render(this)
   }
 
@@ -111,6 +113,10 @@ export class World {
     this.updatables.forEach(entity => {
       entity.update(timestep, unscaledTimestep)
     })
+
+    if (this.debugPhysics) {
+      this.cannonDebugRenderer.update();
+    }
 
     // Lerp time scale
   //  this.params['Time_Scale'] = MathUtils.lerp((this.params?.Time_Scale || 1), this.timeScaleTarget, 0.2)
@@ -175,77 +181,9 @@ export class World {
   }
 
   loadScene = (sceneUuid: string) => {
-    const scene = this.drawScene()
+    this.scenario = new Scenario(this, getCurrentMapUuid())
 
-
-    // this.loadingManager.onFinishedCallback = () => {
-    //   this.update(1, 1)
-    //   this.setTimeScale(1)
-    // }
-
-    this.update(1, 1)
-
-    // Load scene from storage and add physic colliders
-    this.graphicsWorld.add(scene)
-  }
-
-  drawScene = (): Object3D => {
-      const scene = new Object3D()
-      let width = 50
-      let depth = 50
-  
-      const currentMapLayer = getStartingMap()?.layers?.[0]
-      const currentMapGrounds = currentMapLayer?.grounds || []
-      const currentMapEvents = currentMapLayer?.events || []
-      const startingPosition = currentMapLayer?.startingPosition || null
-      const groundMesh = new Mesh(new BoxGeometry(1, 1, 1))
-  
-      const sceneChildren: Mesh[] = []
-  
-      let mapStartingPosition: Vector3 | null = null
-      const mapGrounds: IMapGround[] = []
-      const mapEvents: IMapEvent[] = []
-  
-      for (let i = -width / 2; i < width / 2; i++) {
-        for (let j = -depth / 2; j < depth / 2; j++) {
-          var entry: Mesh;
-  
-          // Has found an already painted ground
-          const paintedGround = currentMapGrounds.find((ground) => ground.position.x === i && ground.position.z === j)
-          if (paintedGround) {
-            entry = groundMesh.clone()
-            entry.material = new MeshBasicMaterial({ color: paintedGround.color})
-            entry.position.set(i, 0, j)
-            mapGrounds.push({ position: entry.position, color: paintedGround.color })
-            sceneChildren.push(entry)
-            continue
-          }
-  
-          // // Nothing, draw the placeholder grid
-          // entry = this.basePlane.clone()
-          // entry.position.set(i, 0, j)
-          // sceneChildren.push(entry)
-        }
-      
-      }
-      scene.add(this.sky)
-      scene.add(light)
-      scene.add(...sceneChildren)
-
-      const initialPosition = currentMapLayer?.startingPosition || new Vector3(0, 0, 0)
-      this.spawnPlayer(initialPosition)
-
-      return scene
-  }
-
-  spawnPlayer = (initialPosition: Vector3) => {
-    this.loadingManager.loadGLTF('build/assets/boxman.glb', (model) => {
-      let player = new Character(model)
-      player.setPosition(initialPosition.x, initialPosition.y, initialPosition.z)
-
-      this.add(player)
-      player.takeControl()
-    })
+    this.scenario.launch(this)
   }
 
   clearEntities = () => {

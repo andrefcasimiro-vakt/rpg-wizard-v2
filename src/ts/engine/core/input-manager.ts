@@ -24,7 +24,7 @@ export class InputManager implements IUpdatable {
 
   constructor(world: World, domElement: HTMLElement) {
     this.world = world
-    this.pointerLock = world.params?.Pointer_Lock
+    this.pointerLock = true // world.params?.Pointer_Lock
     this.domElement = domElement || document.body
     this.isLocked = false
 
@@ -37,20 +37,20 @@ export class InputManager implements IUpdatable {
     this.boundOnKeyUp = this.onKeyUp
 
     this.domElement.addEventListener('mousedown', this.boundOnMouseDown, false)
-    this.domElement.addEventListener('wheel', this.boundOnMouseWheelMove, false)
-    this.domElement.addEventListener('pointerlockchange', this.boundOnPointerlockChange, false)
-    this.domElement.addEventListener('pointerlockerror', this.boundOnPointerlockError, false)
-    this.domElement.addEventListener('keydown', this.boundOnKeyDown, false)
-    this.domElement.addEventListener('keyup', this.boundOnKeyUp, false)
+    document.addEventListener('wheel', this.boundOnMouseWheelMove, false)
+    document.addEventListener('pointerlockchange', this.boundOnPointerlockChange, false)
+    document.addEventListener('pointerlockerror', this.boundOnPointerlockError, false)
+    document.addEventListener('keydown', this.boundOnKeyDown, false)
+    document.addEventListener('keyup', this.boundOnKeyUp, false)
   
     world.registerUpdatable(this)
   }
 
   update = (timestep: number, unscaledTimestep: number) => {
     if (
-      !this.inputReceiver
-      && this.world
-      && this.world.cameraOperator
+      this.inputReceiver === undefined
+      && this.world !== undefined
+      && this.world.cameraOperator !== undefined
     ) {
       this.setInputReceiver(this.world.cameraOperator)
     }
@@ -61,6 +61,10 @@ export class InputManager implements IUpdatable {
   setInputReceiver = (receiver: IInputReceiver) => {
     this.inputReceiver = receiver
     this.inputReceiver.inputReceiverInit()
+  }
+
+  setPointerLock = (enabled: boolean) => {
+    this.pointerLock = enabled
   }
 
   onPointerlockChange = (event: MouseEvent) => {
