@@ -7,6 +7,7 @@ export const Theme = {
   ERROR: '#e63946',
   SUCCESS: '#06d6a0',
   SUCCESS_DARKER: '#04ae81',
+  DANGER: '#f55c47',
 
   NEUTRAL: '#e8e8e8',
   NEUTRAL_LIGHT: '#f4f4f2',
@@ -21,4 +22,6 @@ export const ZIndices = {
   TOOLTIP: 50,
   ALERT: 500,
   MODAL: 100,
+  MODAL_OVERLAY: 101,
+  MODAL_OVERLAY_OVERLAY: 102,
 }

@@ -1,9 +1,11 @@
-import { IEventBase } from "./IEvent";
+import { IEventAction } from "./IEventAction";
 
 export interface IEventPage {
   uuid: string;
 
+  pageIndex: number;
+
   switchId: string | null;
 
-  events: IEventBase[];
+  actions: IEventAction[];
 }

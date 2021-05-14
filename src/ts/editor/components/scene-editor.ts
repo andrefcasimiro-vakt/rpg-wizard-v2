@@ -7,6 +7,8 @@ import { ToolbarEditor } from "./toolbar-editor";
 import { ToolbarMode } from "../enums/ToolbarMode";
 import { IMapGround } from "../interfaces/IMapGround";
 import { getCurrentMap, getCurrentMapUuid } from "../../storage/maps";
+import { addOrUpdateEvent } from "../../storage/events";
+import shortid = require("shortid");
 
 // Cache
 var skyboxGeometry = new BoxGeometry(1000, 1000, 1000)
@@ -186,19 +188,6 @@ export class SceneEditor {
 
         // -- EVENTS ------------------------------------------------------------------------------------
 
-        // Has event waiting to be painted at this position?
-        const queuedEventPosition = options?.queuedEvent?.position
-        if (queuedEventPosition?.x === i && queuedEventPosition?.z === j) {
-          const eventTile = this.getEventTile(i, j)
-
-          mapEvents.push({ position: eventTile.position, eventUuid: options?.queuedEvent.eventUuid })
-          
-          // Only render events if on EVENT MODE
-          if (this.toolbarEditor.mode === ToolbarMode.EVENT) {
-            sceneChildren.push(eventTile)
-          }
-        }
-
         // Has found an already painted event
         const paintedEvent = currentMapEvents.find((event) => event.position.x === i && event.position.z === j) 
         if (paintedEvent) {
@@ -210,6 +199,31 @@ export class SceneEditor {
           if (this.toolbarEditor.mode === ToolbarMode.EVENT) {
             sceneChildren.push(eventTile)
           }
+        } else {
+          // Has event waiting to be painted at this position?
+          const queuedEventPosition = options?.queuedEvent?.position
+          if (queuedEventPosition?.x === i && queuedEventPosition?.z === j) {
+     
+            const eventTile = this.getEventTile(i, j)
+  
+            mapEvents.push({ position: eventTile.position, eventUuid: options?.queuedEvent.eventUuid })
+            
+            // Only render events if on EVENT MODE
+            if (this.toolbarEditor.mode === ToolbarMode.EVENT) {
+              sceneChildren.push(eventTile)
+            }
+  
+            // Create event in the storage
+            addOrUpdateEvent({
+              uuid: options?.queuedEvent?.eventUuid,
+              eventPages: [{
+                uuid: shortid.generate(),
+                pageIndex: 0,
+                switchId: null,
+                actions: [],
+              }]
+            })
+          }  
         }
 
         // -- GROUNDS ------------------------------------------------------------------------------------

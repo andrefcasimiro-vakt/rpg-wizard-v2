@@ -1,5 +1,5 @@
 import { BoxGeometry, Intersection, Mesh, MeshBasicMaterial, Vector3 } from "three";
-import { DatabaseActors } from "./components/database-actors";
+import { DatabaseActors } from "./components/database/database-actors";
 import { EntityEditor } from "./components/entity-editor";
 import { InputManager } from "./components/input-manager";
 import { MapEditor } from "./components/map-editor";
@@ -10,7 +10,7 @@ import { IGround } from "./interfaces/IEntity";
 import { ToolbarMode } from "./enums/ToolbarMode";
 import shortid = require("shortid");
 import { getCurrentMap } from "../storage/maps";
-import { EventEditor } from "./components/event-editor";
+import { EventEditor } from "./components/events/event-editor";
 
 const NAVBAR_HEIGHT = 50
 const SIDEBAR_WIDTH = 300

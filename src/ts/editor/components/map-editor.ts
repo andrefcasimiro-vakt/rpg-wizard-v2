@@ -194,14 +194,8 @@ export class MapEditor implements IEditor {
     setMaps(maps)
   }
 
-  // This has become useless now that we are syncing with storage all the time
-  // In the future when we have json export we use Editor.ts to handle the json generation of the whole project
   save = () => {    
-    const mapListPayload = JSON.stringify(getMaps())
-    window.localStorage.setItem(MAP_LIST_STORAGE_KEY, mapListPayload)
 
-    const currentMapPayload = JSON.stringify(getCurrentMapUuid())
-    window.localStorage.setItem(CURRENT_MAP_UUID_STORAGE_KEY, currentMapPayload)
   }
 
   load = () => {
