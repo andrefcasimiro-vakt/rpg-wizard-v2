@@ -59,6 +59,12 @@ export class Modal {
 
     window.location.hash = ''
   }
+
+  public static refresh = (content: HTMLElement) => {
+    var modalContent = document.querySelector('#modalContent') as HTMLElement
+    modalContent.innerHTML = ''
+    modalContent.appendChild(content)
+  }
 }
 
 Modal.initialize()

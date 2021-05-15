@@ -11,8 +11,6 @@ export class EventEditor {
 
   actionEditor: ActionEditor = new ActionEditor()
 
-  event: IEvent
-
   constructor() {
     window.addEventListener('hashchange', () => {
       this.drawGui()
@@ -32,15 +30,14 @@ export class EventEditor {
 
   setupEvent = () => {
     // Retrieve the event from storage
-    this.event = getEventByUuid(this.getEventUuid())
+    const event = getEventByUuid(this.getEventUuid())
     
-    setCurrentEventUuid(this.event.uuid)
-    setCurrentEventPageUuid(this.event.eventPages[0].uuid)
+    setCurrentEventUuid(event.uuid)
+    setCurrentEventPageUuid(event.eventPages[0].uuid)
   }
 
   updateGui = () => {
-    Modal.close()
-    Modal.open(this.getGui())
+    Modal.refresh(this.getGui())
   }
 
   open = (eventUuid: string) => {
@@ -52,6 +49,8 @@ export class EventEditor {
   }
 
   getGui = (): HTMLElement => {
+    const event = getEventByUuid(this.getEventUuid())
+
     const container = document.createElement('div')
     container.style.display = 'flex'
     container.style.flexDirection = 'row'
@@ -92,7 +91,7 @@ export class EventEditor {
     const removePageBtn = document.createElement('button')
     removePageBtn.style.cursor = 'pointer'
     removePageBtn.innerHTML = 'Remove this page'
-    removePageBtn.disabled = this.event.eventPages.length <= 1
+    removePageBtn.disabled = event.eventPages.length <= 1
     removePageBtn.onclick = this.removeEventPage
     pageToolbar.appendChild(removePageBtn)
 
@@ -103,8 +102,10 @@ export class EventEditor {
     pagePanel.style.paddingTop = '10px'
     content.appendChild(pagePanel)
 
+
     const currentEventPageUuid = getCurrentEventPageUuid()
-    this.event.eventPages.forEach((eventPage, index) => {
+
+    event.eventPages.forEach((eventPage, index) => {
       const isActive = eventPage.uuid === currentEventPageUuid
 
       const pageBtn = document.createElement('button')
@@ -115,11 +116,13 @@ export class EventEditor {
       pageBtn.onclick = () => this.handlePageChange(eventPage.uuid)
 
       if (isActive) {
-        pageBtn.style.background = Theme.LIGHT
-        pageBtn.style.border = `1px solid ${Theme.PRIMARY}`
-      } else {
         pageBtn.style.background = Theme.PRIMARY
+        pageBtn.style.color = Theme.DARK
         pageBtn.style.border = 'none'
+      } else {
+        pageBtn.style.background = Theme.LIGHT
+        pageBtn.style.color = Theme.DARK
+        pageBtn.style.border = `1px solid ${Theme.PRIMARY}`
       }
 
       pagePanel.appendChild(pageBtn)
@@ -128,13 +131,28 @@ export class EventEditor {
 
     const actionsPanel = document.createElement('ul')
     actionsPanel.style.display = 'flex'
-    actionsPanel.style.background = Theme.LIGHT
+    actionsPanel.style.flexDirection = 'column'
+    actionsPanel.style.background = Theme.PRIMARY
     actionsPanel.style.border = `1px solid ${Theme.PRIMARY}`
     actionsPanel.style.height = '100%'
-    actionsPanel.style.padding = '2px'
+    actionsPanel.style.padding = '10px'
     actionsPanel.style.minHeight = '200px'
     actionsPanel.style.alignItems = 'flex-start'
     content.appendChild(actionsPanel)
+
+    const page = event.eventPages.find(eventPage => eventPage.uuid == currentEventPageUuid)
+    page.actions.forEach(action => {
+      const btn = document.createElement('btn')
+      btn.innerHTML = action.display
+      btn.onclick = () => console.log(action)
+      btn.style.cursor = 'pointer'
+      btn.style.width = '100%'
+      btn.style.borderLeft = `2px solid ${Theme.PRIMARY_DARK}`
+      btn.style.paddingLeft = `10px`
+      btn.style.margin = `10px 0`
+      
+      actionsPanel.appendChild(btn)
+    })
 
     const addActionButton = document.createElement('button')
     addActionButton.innerHTML = '@ Add action'
@@ -149,11 +167,10 @@ export class EventEditor {
   }
 
   addEventPage = () => {
-    const event = this.event
+    const event = getEventByUuid(this.getEventUuid())
 
     event.eventPages.push({
       uuid: shortid.generate(),
-      pageIndex: event.eventPages.length,
       switchId: null,
       actions: [],
     })
@@ -164,12 +181,12 @@ export class EventEditor {
   }
 
   removeEventPage = () => {
-    if (this.event.eventPages.length <= 1) {
+    const event = getEventByUuid(this.getEventUuid())
+
+    if (event.eventPages.length <= 1) {
       console.info('Cannot delete the first page of an event.')
       return
     }
-
-    const event = this.event
 
     const newEventPages = event.eventPages.filter(x => x.uuid != getCurrentEventPageUuid())
     event.eventPages = newEventPages

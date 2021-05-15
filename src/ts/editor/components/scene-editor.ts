@@ -41,6 +41,9 @@ export class SceneEditor {
   private squareT: Texture;
   private basePlane: Mesh;
 
+  // UI
+  private modal;
+
   constructor(mapEditor: MapEditor, toolbarEditor: ToolbarEditor) {
     this.mapEditor = mapEditor
     this.toolbarEditor = toolbarEditor
@@ -80,6 +83,8 @@ export class SceneEditor {
 
     this.animate()
     this.drawScene()
+
+    this.modal = document.getElementById('modal')
   }
 
   onDoubleClick = (event: MouseEvent) => {
@@ -117,6 +122,10 @@ export class SceneEditor {
   handleRaycast = (options?: {
     doubleClicked?: boolean,
   }) => {
+    if (this.modal?.style?.display != 'none') {
+      return
+    }
+
     this.raycaster.setFromCamera(this.mouse, this.camera)
     
     const CURRENT_LAYER = 0
@@ -218,7 +227,6 @@ export class SceneEditor {
               uuid: options?.queuedEvent?.eventUuid,
               eventPages: [{
                 uuid: shortid.generate(),
-                pageIndex: 0,
                 switchId: null,
                 actions: [],
               }]

@@ -1,4 +1,4 @@
 export enum EventActionTypes {
-  SHOW_MESSAGE = 'SHOW_MESSAGE',
+  SHOW_TEXT = 'SHOW_TEXT',
   CONTROL_SWITCHES = 'CONTROL_SWITCHES',
 }

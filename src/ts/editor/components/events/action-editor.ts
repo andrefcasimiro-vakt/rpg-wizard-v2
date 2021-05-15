@@ -1,15 +1,17 @@
 import { Theme } from "../../config/theme";
 import { EventActionTypes } from "../../enums/EventActionTypes";
 import { ModalContext } from "../modal-context";
+import { EventActionEditor } from "./actions/event-action-editor";
+import { ShowMessages } from "./actions/messages/show-messages";
 
 const actions = {
   'Messages': {
-    'Show Messages': EventActionTypes.SHOW_MESSAGE,
-    // 'Show Choices': 'showChoices',
+    'Show Text...': ShowMessages,
+    //'Show Choices': ShowMessages,
   },
-  'Game Progression': {
-    'Control Switches': EventActionTypes.CONTROL_SWITCHES,
-  },
+  // 'Game Progression': {
+  //   'Control Switches...': ShowMessages,
+  // },
 }
 
 export class ActionEditor {
@@ -34,7 +36,7 @@ export class ActionEditor {
 
     const list = document.createElement('section')
     list.style.border = `1px solid ${Theme.DARK}`
-    list.style.padding = '2px'
+    list.style.padding = '10px'
     container.appendChild(list)
 
     Object.entries(actions).forEach(action => {
@@ -49,12 +51,18 @@ export class ActionEditor {
         btn.innerHTML = item[0]
         btn.style.cursor = 'pointer'
         btn.style.width = '100%'
-        btn.onclick = () => console.log(item[1])
+        btn.onclick = () => this.dispatchAction(new item[1])
         list.appendChild(btn)
       })
     })
 
     return container
+  }
+
+  dispatchAction = (action: EventActionEditor) => {
+    action.open()
+
+    this.modalContext.close()
   }
 
 }

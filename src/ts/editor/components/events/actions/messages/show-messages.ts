@@ -1,5 +1,8 @@
 import shortid = require("shortid");
-import { IEventAction } from "src/ts/editor/interfaces/IEventAction";
+import { EventActionTypes } from "../../../../../editor/enums/EventActionTypes";
+import { Theme } from "../../../../../editor/config/theme";
+import { IEventAction } from "../../../../../editor/interfaces/IEventAction";
+import { ModalContext } from "../../../modal-context";
 import { EventActionEditor } from "../event-action-editor";
 
 export interface IShowMessage {
@@ -8,19 +11,55 @@ export interface IShowMessage {
 }
 
 export class ShowMessages extends EventActionEditor {
-  eventAction: IEventAction<IShowMessage>
+  textBox: HTMLTextAreaElement
 
-  payload: IShowMessage
+  modalContext: ModalContext = new ModalContext()
 
-  constructor(eventPage) {
-    super(eventPage)
+  open = () => {
+    this.modalContext.open(this.drawGui())
   }
 
-  onCommitChanges = () => {
-    super.onCommitChanges(this.eventAction)
 
-    this.eventAction.uuid = shortid.generate()
-    this.eventAction.payload = this.payload
+  drawGui = () => {
+    const container = document.createElement('div')
 
+    const title = document.createElement('h2')
+    title.innerHTML = 'Show Message'
+    container.appendChild(title)
+
+
+    this.textBox = document.createElement('textarea')
+    this.textBox.style.width = '100%'
+    this.textBox.value = 'Message...'
+    container.appendChild(this.textBox)
+
+    const submitBtn = document.createElement('button')
+    submitBtn.innerHTML = 'Save changes'
+    submitBtn.onclick = this.save
+    container.appendChild(submitBtn)
+
+    return container
+  }
+
+  save = () => {
+    const display = `
+      <b>@ Show Message</b>
+      <b>Actor: </b> 'Actor'
+      <p>${this.textBox.value}</p>
+    `
+
+    const eventAction: IEventAction<IShowMessage> = {
+      uuid: shortid.generate(),
+      type: EventActionTypes.SHOW_TEXT,
+      payload: {
+        actorName: 'Actor',
+        messages: [this.textBox.value]
+      } as IShowMessage,
+      display,
+    }
+
+    this.onCommitChanges(eventAction)
+
+    this.modalContext.close()
   }
 }

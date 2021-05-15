@@ -6,4 +6,6 @@ export interface IEventAction<T = any> {
   type: EventActionTypes
 
   payload: T
+
+  display: string;
 }
