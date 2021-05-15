@@ -1,24 +1,34 @@
 import shortid = require("shortid");
 import { EventActionTypes } from "../../../../../editor/enums/EventActionTypes";
-import { Theme } from "../../../../../editor/config/theme";
 import { IEventAction } from "../../../../../editor/interfaces/IEventAction";
 import { ModalContext } from "../../../modal-context";
 import { EventActionEditor } from "../event-action-editor";
+import { getActionLabel } from "../../../../../editor/utils/ui";
 
-export interface IShowMessage {
+export interface ShowMessagePayload {
   actorName: string;
-  messages: string[];
+  message: string;
 }
 
 export class ShowMessages extends EventActionEditor {
-  textBox: HTMLTextAreaElement
+  actorNameInput: HTMLInputElement
+  messageInput: HTMLTextAreaElement
 
   modalContext: ModalContext = new ModalContext()
+
+  actionUuid = shortid.generate()
 
   open = () => {
     this.modalContext.open(this.drawGui())
   }
 
+  update = (payload: IEventAction<ShowMessagePayload>) => {
+    this.modalContext.open(this.drawGui())
+
+    this.actionUuid = payload.uuid
+    this.actorNameInput.value = payload.payload.actorName
+    this.messageInput.value = payload.payload.message
+  }  
 
   drawGui = () => {
     const container = document.createElement('div')
@@ -27,11 +37,16 @@ export class ShowMessages extends EventActionEditor {
     title.innerHTML = 'Show Message'
     container.appendChild(title)
 
+    this.actorNameInput = document.createElement('input')
+    this.actorNameInput.placeholder = 'Actor name'
+    this.actorNameInput.style.marginBottom = '5px'
+    container.appendChild(this.actorNameInput) 
 
-    this.textBox = document.createElement('textarea')
-    this.textBox.style.width = '100%'
-    this.textBox.value = 'Message...'
-    container.appendChild(this.textBox)
+    this.messageInput = document.createElement('textarea')
+    this.messageInput.style.width = '100%'
+    this.messageInput.rows = 4
+    this.messageInput.placeholder = 'Message...'
+    container.appendChild(this.messageInput)
 
     const submitBtn = document.createElement('button')
     submitBtn.innerHTML = 'Save changes'
@@ -43,18 +58,18 @@ export class ShowMessages extends EventActionEditor {
 
   save = () => {
     const display = `
-      <b>@ Show Message</b>
-      <b>Actor: </b> 'Actor'
-      <p>${this.textBox.value}</p>
+      ${getActionLabel('@show_message:')}
+      <p><b>${this.actorNameInput.value}:</b></p>
+      <p>${this.messageInput.value}</p>
     `
 
-    const eventAction: IEventAction<IShowMessage> = {
-      uuid: shortid.generate(),
+    const eventAction: IEventAction<ShowMessagePayload> = {
+      uuid: this.actionUuid,
       type: EventActionTypes.SHOW_TEXT,
       payload: {
-        actorName: 'Actor',
-        messages: [this.textBox.value]
-      } as IShowMessage,
+        actorName: this.actorNameInput.value,
+        message: this.messageInput.value,
+      } as ShowMessagePayload,
       display,
     }
 

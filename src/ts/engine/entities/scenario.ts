@@ -10,6 +10,7 @@ import { World } from "./world"
 import { BoxCollider } from "../physics/colliders/box-collider"
 import { cannonQuaternion, cannonVector } from "../utils/function-library"
 import { CollisionGroups } from "../enums/collision-groups"
+import { Event } from "../event-system/event"
 
 
 var light = new PointLight(0xffffff)
@@ -73,11 +74,18 @@ export class Scenario {
 
     let mapStartingPosition: Vector3 | null = null
     const mapGrounds: IMapGround[] = []
-    const mapEvents: IMapEvent[] = []
+    const mapEvents: Event[] = []
 
     for (let i = -width / 2; i < width / 2; i++) {
       for (let j = -depth / 2; j < depth / 2; j++) {
         var entry: Mesh;
+
+        // Event
+        const paintedEvent = currentMapEvents.find(event => event.position.x === i && event.position.z == j)
+        if (paintedEvent) {
+          const evtPosition = new Vector3(i, 1, j)
+          mapEvents.push(new Event(this.world, evtPosition, paintedEvent.eventUuid))
+        }
 
         // Has found an already painted ground
         const paintedGround = currentMapGrounds.find((ground) => ground.position.x === i && ground.position.z === j)

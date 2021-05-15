@@ -3,23 +3,31 @@ import { IEventAction } from "../../../../editor/interfaces/IEventAction";
 
 export abstract class EventActionEditor {
 
+  public onChangesCommited: () => void;
+
   abstract open: () => void;
 
-  onCommitChanges = (payload: IEventAction) => {
+  abstract update: (action: IEventAction) => void;
+
+  onCommitChanges = (action: IEventAction) => {
     const pageUuid = getCurrentEventPageUuid()
     const event = getCurrentEvent()
 
     event.eventPages.forEach(eventPage => {
       if (eventPage.uuid == pageUuid) {
-        const actionIdx = eventPage.actions.findIndex(x => x.uuid == payload.uuid)
+        const actionIdx = eventPage.actions.findIndex(x => x.uuid == action.uuid)
         if (actionIdx != -1) {
-          eventPage.actions[actionIdx] = payload
+          eventPage.actions[actionIdx] = action
         } else {
-          eventPage.actions.push(payload)
+          eventPage.actions.push(action)
         }
       }
     })
 
     addOrUpdateEvent(event)
+
+    if (this.onChangesCommited) {
+      this.onChangesCommited()
+    }
   }
 }

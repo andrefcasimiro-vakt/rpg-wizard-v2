@@ -14,8 +14,10 @@ import { GroundImpactData } from "./ground-impact-data";
 import * as CANNON from 'cannon'
 import { Idle } from "./character-states";
 
+const MOVE_SPEED = 4
+
 export class Character extends Object3D implements IWorldEntity {
-  public entityType = EntityType.Character
+  public entityType = EntityType.PLAYER
   public updateOrder = 1
 
   public height = 0
@@ -36,7 +38,7 @@ export class Character extends Object3D implements IWorldEntity {
   public defaultVelocitySimulatorDamping = 0.8
   public defaultVelocitySimulatorMass = 50
   public velocitySimulator: VectorSpringSimulator
-  public moveSpeed = 4
+  public moveSpeed = MOVE_SPEED
   public angularVelocity = 0
   public orientation = new Vector3(0, 0, 1)
   public orientationTarget = new Vector3(0, 0, 1)
@@ -65,6 +67,8 @@ export class Character extends Object3D implements IWorldEntity {
   public behavior: ICharacterAI
 
   private physicsEnabled = true
+
+  isControllable = true
 
   constructor(gltf: any) {
     super()
@@ -327,6 +331,10 @@ export class Character extends Object3D implements IWorldEntity {
   }
 
   public update(timeStep: number): void {
+    if (this.isControllable == false) {
+      return
+    }
+
     this.behavior?.update(timeStep)
 
     this.charState?.update(timeStep)
@@ -642,5 +650,16 @@ export class Character extends Object3D implements IWorldEntity {
     // Add to graphics world
     world.graphicsWorld.remove(this)
     world.graphicsWorld.remove(this.raycastBox)
+  }
+
+  disableInput = () => {
+    this.setState(new Idle(this))
+
+    this.velocity = new Vector3(0, 0, 0)
+    this.isControllable = false
+  }
+
+  enableInput = () => {
+    this.isControllable = true
   }
 }

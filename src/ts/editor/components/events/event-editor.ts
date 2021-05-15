@@ -2,6 +2,7 @@ import shortid = require("shortid");
 import { addOrUpdateEvent, getCurrentEventPageUuid, getEventByUuid, setCurrentEventPageUuid, setCurrentEventUuid } from "../../../storage/events";
 import { Theme } from "../../config/theme";
 import { IEvent } from "../../interfaces/IEvent";
+import { getEventActionInstance } from "../../utils/event-actions";
 import { Modal } from "../modal";
 import { ActionEditor } from "./action-editor";
 
@@ -9,9 +10,11 @@ const HASH = '#event'
 
 export class EventEditor {
 
-  actionEditor: ActionEditor = new ActionEditor()
+  actionEditor: ActionEditor
 
   constructor() {
+    this.actionEditor = new ActionEditor(this)
+
     window.addEventListener('hashchange', () => {
       this.drawGui()
     })
@@ -54,6 +57,7 @@ export class EventEditor {
     const container = document.createElement('div')
     container.style.display = 'flex'
     container.style.flexDirection = 'row'
+    container.style.height = 'calc(100vh - 100px)'
 
     const sidebar = document.createElement('div')
     sidebar.style.display = 'flex'
@@ -102,7 +106,6 @@ export class EventEditor {
     pagePanel.style.paddingTop = '10px'
     content.appendChild(pagePanel)
 
-
     const currentEventPageUuid = getCurrentEventPageUuid()
 
     event.eventPages.forEach((eventPage, index) => {
@@ -129,27 +132,33 @@ export class EventEditor {
     })
     
 
-    const actionsPanel = document.createElement('ul')
+    const actionsPanel = document.createElement('div')
     actionsPanel.style.display = 'flex'
     actionsPanel.style.flexDirection = 'column'
     actionsPanel.style.background = Theme.PRIMARY
     actionsPanel.style.border = `1px solid ${Theme.PRIMARY}`
-    actionsPanel.style.height = '100%'
     actionsPanel.style.padding = '10px'
-    actionsPanel.style.minHeight = '200px'
+    actionsPanel.style.height = '100%'
+    actionsPanel.style.overflowY = 'scroll'
+
     actionsPanel.style.alignItems = 'flex-start'
     content.appendChild(actionsPanel)
 
     const page = event.eventPages.find(eventPage => eventPage.uuid == currentEventPageUuid)
     page.actions.forEach(action => {
-      const btn = document.createElement('btn')
+      const btn = document.createElement('button')
       btn.innerHTML = action.display
-      btn.onclick = () => console.log(action)
       btn.style.cursor = 'pointer'
       btn.style.width = '100%'
+      btn.style.border = 'none'
+      btn.style.display = 'flex'
+      btn.style.flexDirection = 'column'
+      btn.style.backgroundColor = Theme.PRIMARY_LIGHT
       btn.style.borderLeft = `2px solid ${Theme.PRIMARY_DARK}`
       btn.style.paddingLeft = `10px`
       btn.style.margin = `10px 0`
+
+      btn.ondblclick = () => getEventActionInstance(action.type).update(action)
       
       actionsPanel.appendChild(btn)
     })

@@ -3,6 +3,7 @@ import { EventActionTypes } from "../../enums/EventActionTypes";
 import { ModalContext } from "../modal-context";
 import { EventActionEditor } from "./actions/event-action-editor";
 import { ShowMessages } from "./actions/messages/show-messages";
+import { EventEditor } from "./event-editor";
 
 const actions = {
   'Messages': {
@@ -16,10 +17,11 @@ const actions = {
 
 export class ActionEditor {
 
+  eventEditor: EventEditor;
   modalContext: ModalContext = new ModalContext()
 
-  constructor() {
-
+  constructor(eventEditor: EventEditor) {
+    this.eventEditor = eventEditor
   }
 
   open = () => {
@@ -61,6 +63,9 @@ export class ActionEditor {
 
   dispatchAction = (action: EventActionEditor) => {
     action.open()
+
+    // Callback to update event editor whenever we submit or edit an action
+    action.onChangesCommited = this.eventEditor.updateGui
 
     this.modalContext.close()
   }

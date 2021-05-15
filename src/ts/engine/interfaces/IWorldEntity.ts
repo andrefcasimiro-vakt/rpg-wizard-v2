@@ -2,7 +2,8 @@ import { World } from "../entities/world";
 import { IUpdatable } from "./IUpdatable";
 
 export enum EntityType {
-  Character = 'character'
+  PLAYER = 'PLAYER',
+  NPC = 'NPC'
 }
 
 export interface IWorldEntity extends IUpdatable {

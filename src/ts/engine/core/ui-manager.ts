@@ -8,4 +8,5 @@ export class UIManager {
 
     loadingScreenElement.style.display = value ? 'flex' : 'none'
   }
+  
 }

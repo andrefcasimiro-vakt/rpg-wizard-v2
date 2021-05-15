@@ -71,3 +71,7 @@ export const createDatabaseSidebar = (activeHash: string) => {
 
   return sidebar
 }
+
+export const getActionLabel = (label: string) => {
+  return `<p style="font-size: 11px"><b>${label}</b></p>`
+}
