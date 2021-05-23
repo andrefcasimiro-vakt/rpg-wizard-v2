@@ -93,7 +93,6 @@ export class MapEditor implements IEditor {
 
       const btnStyle = btn.style
       btnStyle.minWidth = '100%'
-      btnStyle.cursor = 'pointer'
       btnStyle.display = 'flex'
       btnStyle.flexDirection = 'row'
       btnStyle.justifyContent = 'flex-start'

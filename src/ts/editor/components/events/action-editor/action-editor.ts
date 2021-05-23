@@ -1,9 +1,9 @@
-import { Theme } from "../../config/theme";
-import { EventActionTypes } from "../../enums/EventActionTypes";
-import { ModalContext } from "../modal-context";
+import { Theme } from "../../../config/theme";
+import { EventActionTypes } from "../../../enums/EventActionTypes";
+import { ModalContext } from "../../modal-context";
 import { EventActionEditor } from "./actions/event-action-editor";
 import { ShowMessages } from "./actions/messages/show-messages";
-import { EventEditor } from "./event-editor";
+import { EventEditor } from "../event-editor";
 
 const actions = {
   'Messages': {
@@ -51,7 +51,6 @@ export class ActionEditor {
       Object.entries(action[1]).forEach(item => {
         const btn = document.createElement('button')
         btn.innerHTML = item[0]
-        btn.style.cursor = 'pointer'
         btn.style.width = '100%'
         btn.onclick = () => this.dispatchAction(new item[1])
         list.appendChild(btn)

@@ -7,7 +7,7 @@ import { PencilIcon } from "../icons/pencil-icon";
 import { SaveIcon } from "../icons/save-icon";
 import { IEditor } from "../interfaces/IEditor";
 import { ToolbarMode } from "../enums/ToolbarMode";
-import { DatabaseTabs } from "../utils/database";
+import { DatabaseTabs } from "../enums/database";
 import { StartingPositionIcon } from "../icons/starting-position";
 import { PlayIcon } from "../icons/play-icon";
 
@@ -124,7 +124,6 @@ export class ToolbarEditor implements IEditor {
     style.justifyContent = 'center'
     style.margin = '10px 5px'
     style.width = '35px'
-    style.cursor = 'pointer'
     
     btn.title = label
 

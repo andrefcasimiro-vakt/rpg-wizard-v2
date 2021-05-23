@@ -17,3 +17,7 @@ ul {
 li {
   display: inline;
 }
+
+button {
+  cursor: pointer;
+}

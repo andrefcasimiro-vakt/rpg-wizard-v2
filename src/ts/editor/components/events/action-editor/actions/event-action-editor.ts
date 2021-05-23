@@ -1,5 +1,5 @@
-import { addOrUpdateEvent, getCurrentEvent, getCurrentEventPageUuid } from "../../../../storage/events";
-import { IEventAction } from "../../../../editor/interfaces/IEventAction";
+import { addOrUpdateEvent, getCurrentEvent, getCurrentEventPageUuid } from "../../../../../storage/events";
+import { IEventAction } from "../../../../interfaces/IEventAction";
 
 export abstract class EventActionEditor {
 
@@ -27,6 +27,8 @@ export abstract class EventActionEditor {
     addOrUpdateEvent(event)
 
     if (this.onChangesCommited) {
+      console.log('teste')
+
       this.onChangesCommited()
     }
   }

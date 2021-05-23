@@ -130,8 +130,6 @@ export class EntityEditor {
       const ground = entity as IGround
       btnStyle.background = ground?.color || Theme.PRIMARY
 
-      btnStyle.cursor = 'pointer'
-
       const isSelected = entity.uuid === this.currentEntity?.uuid
 
       btnStyle.border = `1px solid ${Theme.NEUTRAL_DARKER}`

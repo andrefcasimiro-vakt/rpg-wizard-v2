@@ -1,7 +1,7 @@
 import { Dispatcher } from "src/ts/engine/event-system/dispatcher";
 import { DispatchShowMessage } from "src/ts/engine/event-system/dispatchers/dispatch-show-message";
-import { EventActionEditor } from "../components/events/actions/event-action-editor";
-import { ShowMessages } from "../components/events/actions/messages/show-messages"
+import { EventActionEditor } from "../components/events/action-editor/actions/event-action-editor";
+import { ShowMessages } from "../components/events/action-editor/actions/messages/show-messages"
 import { EventActionTypes } from "../enums/EventActionTypes"
 
 export const getEventActionInstance = (type: EventActionTypes): EventActionEditor => {

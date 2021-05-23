@@ -1,6 +1,4 @@
 import { IEvent } from "../editor/interfaces/IEvent"
-import { IMap } from "../editor/interfaces/IMap"
-import { getMaps } from "./maps"
 
 export const CURRENT_EVENT_UUID_KEY = `currentEventUuid`
 

@@ -1,6 +1,6 @@
 import { Theme } from "../../config/theme";
 import { IEditor } from "../../interfaces/IEditor";
-import { DatabaseTabs } from "../../utils/database";
+import { DatabaseTabs } from "../../enums/database";
 import { createDatabaseSidebar } from "../../utils/ui";
 import { Modal } from "../modal";
 

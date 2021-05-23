@@ -43,7 +43,6 @@ export class ModalContext {
     closeBtnStyle.display = 'flex'
     closeBtnStyle.justifyContent = 'center'
     closeBtnStyle.alignItems = 'center'
-    closeBtnStyle.cursor = 'pointer'
     closeBtnStyle.background = Theme.DANGER
     closeBtnStyle.border = 'none'
     closeBtnStyle.color = Theme.LIGHT
@@ -66,5 +65,10 @@ export class ModalContext {
 
   close = () => {
     document.body.removeChild(this.modalContainer)
+  }
+
+  refresh = (content: HTMLElement) => {
+    this.modalContent.innerHTML = ''
+    this.modalContent.appendChild(content)
   }
 }

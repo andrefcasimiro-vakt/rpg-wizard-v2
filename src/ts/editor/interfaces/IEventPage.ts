@@ -1,9 +1,10 @@
 import { IEventAction } from "./IEventAction";
+import { ISwitch } from "./ISwitch";
 
 export interface IEventPage {
   uuid: string;
 
-  switchId: string | null;
+  switches: ISwitch[];
 
   actions: IEventAction[];
 }

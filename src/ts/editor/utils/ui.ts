@@ -1,5 +1,5 @@
 import { Theme } from "../config/theme"
-import { DatabaseTabs } from "./database"
+import { DatabaseTabs } from "../enums/database"
 import { includesHash } from "./modal"
 
 export const createListPanelGUI = (height = 250) => {
@@ -35,7 +35,6 @@ export const createActionButtonGUI = (label: string, isActive?: boolean) => {
   btnStyle.display = 'flex'
   btnStyle.alignItems = 'center'
   btnStyle.justifyContent = 'center'
-  btnStyle.cursor = 'pointer'
   btnStyle.height = `30px`
   btnStyle.width = `100%`
   btnStyle.border = 'none'

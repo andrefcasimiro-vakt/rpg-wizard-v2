@@ -1,9 +1,9 @@
 import shortid = require("shortid");
-import { EventActionTypes } from "../../../../../editor/enums/EventActionTypes";
-import { IEventAction } from "../../../../../editor/interfaces/IEventAction";
-import { ModalContext } from "../../../modal-context";
+import { EventActionTypes } from "../../../../../enums/EventActionTypes";
+import { IEventAction } from "../../../../../interfaces/IEventAction";
+import { ModalContext } from "../../../../modal-context";
 import { EventActionEditor } from "../event-action-editor";
-import { getActionLabel } from "../../../../../editor/utils/ui";
+import { getActionLabel } from "../../../../../utils/ui";
 
 export interface ShowMessagePayload {
   actorName: string;

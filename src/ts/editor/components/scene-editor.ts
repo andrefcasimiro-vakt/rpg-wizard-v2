@@ -227,7 +227,7 @@ export class SceneEditor {
               uuid: options?.queuedEvent?.eventUuid,
               eventPages: [{
                 uuid: shortid.generate(),
-                switchId: null,
+                switches: [],
                 actions: [],
               }]
             })

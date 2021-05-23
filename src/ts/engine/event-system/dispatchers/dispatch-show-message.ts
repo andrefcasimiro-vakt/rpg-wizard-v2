@@ -1,4 +1,4 @@
-import { ShowMessagePayload } from "src/ts/editor/components/events/actions/messages/show-messages";
+import { ShowMessagePayload } from "src/ts/editor/components/events/action-editor/actions/messages/show-messages";
 import { IEventAction } from "src/ts/editor/interfaces/IEventAction";
 import { Character } from "../../characters/character";
 import { UIDialogueManager } from "../../ui/ui-dialogue-manager";
