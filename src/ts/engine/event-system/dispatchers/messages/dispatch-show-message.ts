@@ -1,8 +1,8 @@
 import { ShowMessagePayload } from "src/ts/editor/components/events/action-editor/actions/messages/show-messages";
 import { IEventAction } from "src/ts/editor/interfaces/IEventAction";
-import { Character } from "../../characters/character";
-import { UIDialogueManager } from "../../ui/ui-dialogue-manager";
-import { Dispatcher } from "../dispatcher";
+import { Character } from "../../../characters/character";
+import { UIDialogueManager } from "../../../ui/ui-dialogue-manager";
+import { Dispatcher } from "../../dispatcher";
 
 export class DispatchShowMessage extends Dispatcher {
 
@@ -23,7 +23,6 @@ export class DispatchShowMessage extends Dispatcher {
   }
 
   handleKey = (evt: KeyboardEvent) => {
-    console.log(evt)
     if (evt.key == 'e') {
       UIDialogueManager.closeDialogue()
 

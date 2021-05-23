@@ -35,13 +35,11 @@ export class Event implements IUpdatable {
   }
 
   update = () => {
-
     if (this.player == null) {
       this.player = this.world.characters.find(char => char.entityType == EntityType.PLAYER)
     }
 
-    const playerPos = this?.player?.position.clone()?.round()
-    const isPlayerPositionSameAsEvent = playerPos.equals(this.eventPosition)
+    const isPlayerPositionSameAsEvent = this?.player?.position.clone()?.round()?.equals(this.eventPosition)
 
     if (this.enabled == false && !isPlayerPositionSameAsEvent) {
       // If player has moved away after event has played, reset the event
@@ -57,10 +55,22 @@ export class Event implements IUpdatable {
   }
 
   dispatch = async () => {
-    const page = this.event.eventPages[0]
+    // Get the first page where all switches are active
+
+    // Find last
+    var page = this.event.eventPages.slice().reverse().find(page => {
+      return page.switches.length && page.switches.every(pageSwitch =>
+        this.world.gameState.getSwitch(pageSwitch.uuid)?.value == true
+      )
+    })
+
+    if (!page) {
+      // Get first page
+      page = this.event.eventPages[0]
+    }
 
     const promises = page.actions.map(action => {
-      return () => getEventActionDispatcher(action.type).dispatch(action, this.player)
+      return () => getEventActionDispatcher(action.type).dispatch(action, this.player, this.world)
     })
 
     for (let promise of promises) {

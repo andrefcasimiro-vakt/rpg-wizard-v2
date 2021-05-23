@@ -16,6 +16,8 @@ import { Event } from "../event-system/event"
 var light = new PointLight(0xffffff)
 light.position.set(100, 250, 100)
 
+var groundMesh = new Mesh(new BoxGeometry(1, 1, 1))
+
 
 export class Scenario {
   public mapUuid: string
@@ -68,50 +70,18 @@ export class Scenario {
     const currentMapLayer = this.map?.layers?.[0]
     const currentMapGrounds = currentMapLayer?.grounds || []
     const currentMapEvents = currentMapLayer?.events || []
-    const groundMesh = new Mesh(new BoxGeometry(1, 1, 1))
 
     const sceneChildren: Mesh[] = []
 
     let mapStartingPosition: Vector3 | null = null
-    const mapGrounds: IMapGround[] = []
-    const mapEvents: Event[] = []
 
     for (let i = -width / 2; i < width / 2; i++) {
       for (let j = -depth / 2; j < depth / 2; j++) {
-        var entry: Mesh;
-
-        // Event
-        const paintedEvent = currentMapEvents.find(event => event.position.x === i && event.position.z == j)
-        if (paintedEvent) {
-          const evtPosition = new Vector3(i, 1, j)
-          mapEvents.push(new Event(this.world, evtPosition, paintedEvent.eventUuid))
-        }
-
-        // Has found an already painted ground
-        const paintedGround = currentMapGrounds.find((ground) => ground.position.x === i && ground.position.z === j)
-        if (paintedGround) {
-          entry = groundMesh.clone()
-          entry.material = new MeshBasicMaterial({ color: paintedGround.color})
-          entry.position.set(i, 0, j)
-          mapGrounds.push({ position: entry.position, color: paintedGround.color })
-          sceneChildren.push(entry)
-
-          // Physics
-          let physics = new BoxCollider({ size: new Vector3(entry.scale.x / 2, entry.scale.y / 2, entry.scale.z / 2) })
-          physics.body.position.copy(cannonVector(entry.position))
-          physics.body.quaternion.copy(cannonQuaternion(entry.quaternion))
-          physics.body.computeAABB()
-
-          physics.body.shapes.forEach((shape) => {
-            shape.collisionFilterMask = ~CollisionGroups.TrimeshColliders
-          })
-
-          this.world.physicsWorld.addBody(physics.body)
-          continue
-        }
+        this.handleEvent(i, j, currentMapEvents)
+        this.handleGround(i, j, currentMapGrounds, sceneChildren)
       }
-    
     }
+
     scene.add(this.world.sky)
     scene.add(light)
     scene.add(...sceneChildren)
@@ -120,6 +90,41 @@ export class Scenario {
     this.spawnPlayer(initialPosition)
 
     this.world.graphicsWorld.add(scene)
+  }
+
+  handleEvent = (x: number, z: number, currentMapEvents: IMapEvent[]) => {
+    const paintedEvent = currentMapEvents.find(event => event.position.x === x && event.position.z == z)
+    if (!paintedEvent) {
+      return
+    }
+
+    const evtPosition = new Vector3(x, 1, z)
+
+    new Event(this.world, evtPosition, paintedEvent.eventUuid)
+  }
+
+  handleGround = (x: number, z: number, currentMapGrounds: IMapGround[], sceneChildren: Mesh[]) => {
+    const paintedGround = currentMapGrounds.find((ground) => ground.position.x === x && ground.position.z === z)
+    if (!paintedGround) {
+      return
+    }
+    var entry: Mesh;
+    entry = groundMesh.clone()
+    entry.material = new MeshBasicMaterial({ color: paintedGround.color})
+    entry.position.set(x, 0, z)
+    sceneChildren.push(entry)
+
+    // Physics
+    let physics = new BoxCollider({ size: new Vector3(entry.scale.x / 2, entry.scale.y / 2, entry.scale.z / 2) })
+    physics.body.position.copy(cannonVector(entry.position))
+    physics.body.quaternion.copy(cannonQuaternion(entry.quaternion))
+    physics.body.computeAABB()
+
+    physics.body.shapes.forEach((shape) => {
+      shape.collisionFilterMask = ~CollisionGroups.TrimeshColliders
+    })
+
+    this.world.physicsWorld.addBody(physics.body)
   }
 
   spawnPlayer = (initialPosition: Vector3) => {

@@ -2,17 +2,19 @@ import { Theme } from "../../../config/theme";
 import { EventActionTypes } from "../../../enums/EventActionTypes";
 import { ModalContext } from "../../modal-context";
 import { EventActionEditor } from "./actions/event-action-editor";
-import { ShowMessages } from "./actions/messages/show-messages";
 import { EventEditor } from "../event-editor";
+// Actions
+import { ShowMessages } from "./actions/messages/show-messages";
+import { ControlSwitches } from "./actions/game-progression/control-switches";
 
 const actions = {
   'Messages': {
     'Show Text...': ShowMessages,
     //'Show Choices': ShowMessages,
   },
-  // 'Game Progression': {
-  //   'Control Switches...': ShowMessages,
-  // },
+  'Game Progression': {
+    'Control Switches...': ControlSwitches,
+  },
 }
 
 export class ActionEditor {

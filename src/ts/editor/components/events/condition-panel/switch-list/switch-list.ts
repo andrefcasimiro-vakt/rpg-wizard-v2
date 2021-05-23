@@ -1,21 +1,21 @@
 import shortid = require("shortid");
 import { Theme } from "src/ts/editor/config/theme";
+import { ISwitch } from "src/ts/editor/interfaces/ISwitch";
 import { getSwitches, setSwitches } from "src/ts/storage/switches";
 import { ModalContext } from "../../../modal-context";
-import { ConditionPanel } from "../condition-panel";
 
 export class SwitchList {
   modalContext: ModalContext = new ModalContext()
 
-  conditionPanel: ConditionPanel
+  onSwitchSelection: (nextSwitch: ISwitch) => void
 
   targetSwitchUuid: string
 
   // Html
   selectedSwitchUuid: string | null
 
-  constructor(conditionPanel: ConditionPanel, targetSwitchUuid: string) {
-    this.conditionPanel = conditionPanel
+  constructor(onSwitchSelection: (nextSwitch: ISwitch) => void, targetSwitchUuid: string) {
+    this.onSwitchSelection = onSwitchSelection
 
     this.targetSwitchUuid = targetSwitchUuid
 
@@ -131,7 +131,7 @@ export class SwitchList {
     const nextSwitch = getSwitches().find(x => x.uuid === this.selectedSwitchUuid)
 
     // Callback
-    this.conditionPanel.setSwitch(this.targetSwitchUuid, nextSwitch)
+    this.onSwitchSelection(nextSwitch)
 
     this.modalContext.close()
   }

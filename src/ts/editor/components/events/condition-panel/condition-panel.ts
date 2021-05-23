@@ -61,8 +61,12 @@ export class ConditionPanel {
       switchListButton.innerHTML = '...'
       switchListButton.title = 'Select a switch from the list'
       switchListButton.onclick = () => {
-        new SwitchList(this, switchItem.uuid).open()
+        new SwitchList(
+          (nextSwitch) => this.setSwitch(switchItem.uuid, nextSwitch),
+          switchItem.uuid
+        ).open()
       }
+
       buttonContainers.appendChild(switchListButton)
 
       const switchRemoveButton = document.createElement('button')

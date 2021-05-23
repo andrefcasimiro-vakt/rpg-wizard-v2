@@ -6,15 +6,11 @@ import { IWorldEntity } from "../interfaces/IWorldEntity";
 import _ = require("lodash");
 import { InputManager } from "../core/input-manager";
 import { CameraOperator } from "../core/camera-operator";
-import { Vector3 } from "three";
-import { IMapGround } from "../../editor/interfaces/IMapGround";
-import { IMapEvent } from "../../editor/interfaces/IMapEvent";
-import { getCurrentMap, getCurrentMapUuid, getStartingMap } from "../../storage/maps";
-// import { OrbitControls } from '../../../lib/orbitControls'
+import { getCurrentMapUuid } from "../../storage/maps";
 import { Character } from "../characters/character";
-import { getForward } from "../utils/function-library";
 import { Scenario } from "./scenario";
 import { CannonDebugRenderer } from '../../../lib/cannon/CannonDebugRenderer'
+import { GameState } from "./game-state";
 
 const MOUSE_SENSITIVITY = 0.3
 
@@ -44,6 +40,8 @@ export class World {
   public cameraOperator: CameraOperator
   public timeScaleTarget = 1
   public updatables: IUpdatable[] = []
+
+  public gameState: GameState = new GameState()
 
   public scenario: Scenario = null
 
