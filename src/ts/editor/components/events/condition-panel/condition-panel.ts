@@ -3,9 +3,10 @@ import { Theme } from "src/ts/editor/config/theme";
 import { IEventPage } from "src/ts/editor/interfaces/IEventPage";
 import { ISwitch } from "src/ts/editor/interfaces/ISwitch";
 import { addOrUpdateEvent, getCurrentEvent } from "src/ts/storage/events";
-import { getSwitches } from "src/ts/storage/switches";
 import { EventEditor } from "../event-editor";
 import { SwitchList } from "./switch-list/switch-list";
+import * as styles from './condition-panel.css'
+import { createElement, createElementWithTooltip } from "src/ts/editor/utils/ui";
 
 export class ConditionPanel {
   page: IEventPage
@@ -16,72 +17,53 @@ export class ConditionPanel {
     this.eventEditor = eventEditor
   }
 
-  initialize = (container: HTMLElement) => {
-    const conditionsPanel = document.createElement('div')
-    conditionsPanel.style.width = '30%'
-    conditionsPanel.style.height = '100%'
-    conditionsPanel.style.padding = '10px'
-
-    container.appendChild(conditionsPanel)
-    
+  initialize = (container: HTMLElement) => {    
     // Switches
-    const switchPanel = document.createElement('div')
-    switchPanel.style.width = '100%'
-    switchPanel.style.display = 'flex'
-    switchPanel.style.flexDirection = 'column'
-    conditionsPanel.appendChild(switchPanel)
+    const switchPanel = createElement('div', styles.switchPanel)
+    container.appendChild(switchPanel)
 
-    const switchHeaderText = document.createElement('h4')
+    const switchHeaderText = document.createElement('p')
     switchHeaderText.innerHTML = 'Conditions'
     switchPanel.appendChild(switchHeaderText)
 
-    const switchesList = document.createElement('ul')
-    switchesList.style.display = 'flex'
-    switchesList.style.flexDirection = 'column'
+    const switchesList = createElement('ul', styles.switchList)
     switchPanel.appendChild(switchesList)
 
     this.page.switches.forEach(switchItem => {
-      const switchContainer = document.createElement('li')
-      switchContainer.style.display = 'flex'
-      switchContainer.style.alignItems = 'center'
-      switchContainer.style.justifyContent = 'space-between'
-      switchContainer.style.padding = '5px'
-      switchContainer.style.border = `1px solid ${Theme.PRIMARY_DARK}`
+      const switchContainer = createElement('li', styles.switchContainer)
       switchesList.appendChild(switchContainer)
 
-      const switchName = document.createElement('p')
-      switchName.style.fontSize = '12px'
-      switchName.innerHTML = switchItem.name == null ? `Select a switch...` : `${switchItem.name} is ON`
+      const switchName = createElement('p', styles.switchName)
+      switchName.innerHTML = switchItem.name == null ? `Select a switch...` : `<em>${switchItem.name}</em> <strong>is ON</strong>`
       switchContainer.appendChild(switchName)
 
-      const buttonContainers = document.createElement('div')
-      switchContainer.appendChild(buttonContainers)
+      const switchManagementButtons = createElement('div', styles.switchManagementButtons)
+      switchContainer.appendChild(switchManagementButtons)
 
       const switchListButton = document.createElement('button')
       switchListButton.innerHTML = '...'
-      switchListButton.title = 'Select a switch from the list'
       switchListButton.onclick = () => {
         new SwitchList(
           (nextSwitch) => this.setSwitch(switchItem.uuid, nextSwitch),
           switchItem.uuid
         ).open()
       }
+      switchManagementButtons.appendChild(
+        createElementWithTooltip(switchListButton, 'Select a switch from the list')
+      )
 
-      buttonContainers.appendChild(switchListButton)
 
       const switchRemoveButton = document.createElement('button')
+      switchRemoveButton.className = styles.switchRemoveButton
       switchRemoveButton.onclick = () => this.removeSwitch(switchItem.uuid)
-      switchRemoveButton.style.marginLeft = '5px'
-      switchRemoveButton.title = 'Remove this switch'
       switchRemoveButton.innerHTML = 'X'
-      buttonContainers.appendChild(switchRemoveButton)
+      switchManagementButtons.appendChild(
+        createElementWithTooltip(switchRemoveButton, 'Remove switch')
+      )
     })
 
-    const addSwitchButton = document.createElement('button')
+    const addSwitchButton = createElement('button', styles.addSwitchButton)
     addSwitchButton.innerHTML = 'Add switch'
-    addSwitchButton.style.display = 'flex'
-    addSwitchButton.style.width = '100%'
-    addSwitchButton.style.marginTop = `10px`
     addSwitchButton.onclick = this.addSwitch
     
     switchesList.appendChild(addSwitchButton)
@@ -136,7 +118,7 @@ export class ConditionPanel {
     currentEvent.eventPages.forEach((page, index) => {
       if (page.uuid == this.page.uuid) {
         const entry = currentEvent.eventPages[index]
-
+        console.log(entry)
         for (let i = 0; i < entry.switches.length; i++) {
           if (entry.switches[i].uuid === targetSwitchUuid) {
             entry.switches[i] = nextSwitch

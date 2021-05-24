@@ -2,6 +2,26 @@ import { Theme } from "../config/theme"
 import { DatabaseTabs } from "../enums/database"
 import { includesHash } from "./modal"
 
+export const createElement = (type: string, className: string): HTMLElement => {
+  var el = document.createElement(type)
+  el.className = className
+
+  return el
+}
+
+export const createElementWithTooltip = (children: HTMLElement, tooltipText: string): HTMLElement => {
+  var container = document.createElement('div')
+  container.className = 'tooltip'
+  container.appendChild(children)
+  
+  var txt = document.createElement('span')
+  txt.className = 'tooltiptext'
+  txt.innerHTML = tooltipText
+  container.appendChild(txt)
+
+  return container
+}
+
 export const createListPanelGUI = (height = 250) => {
   const itemsPanel = document.createElement('ul')
 

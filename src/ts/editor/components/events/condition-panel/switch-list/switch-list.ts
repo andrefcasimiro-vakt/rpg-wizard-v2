@@ -42,7 +42,6 @@ export class SwitchList {
     selectedSwitchInput.style.overflow = 'scroll'
     container.appendChild(selectedSwitchInput)
 
-
     const addSwitchBtn = document.createElement('button')
     addSwitchBtn.innerHTML = 'Add switch'
     addSwitchBtn.style.marginBottom = '10px'
@@ -79,11 +78,13 @@ export class SwitchList {
     selectedSwitchNameLabel.htmlFor = 'switchName'
     actionsContainer.appendChild(selectedSwitchNameLabel)
 
+    const isDisabled = switches.length <= 0 || !switches?.find(x => x.uuid == this.selectedSwitchUuid)
+
     const selectedSwitchNameInput = document.createElement('input')
     selectedSwitchNameInput.id = 'switchName'
     selectedSwitchNameInput.style.padding = '6px'
     selectedSwitchNameInput.value = switches.find(x => x.uuid == this.selectedSwitchUuid)?.name || ''
-    selectedSwitchNameInput.disabled = this.selectedSwitchUuid == null
+    selectedSwitchNameInput.disabled = isDisabled
     selectedSwitchNameInput.style.marginBottom = '4px'
     selectedSwitchNameInput.onchange = this.handleSwitchRename
 
@@ -92,7 +93,7 @@ export class SwitchList {
     const selectSwitchBtn = document.createElement('button')
     selectSwitchBtn.innerHTML = 'Save changes'
     selectSwitchBtn.onclick = this.saveChanges
-    selectSwitchBtn.disabled = this.selectedSwitchUuid == null
+    selectSwitchBtn.disabled = isDisabled
     actionsContainer.appendChild(selectSwitchBtn)
 
     return container

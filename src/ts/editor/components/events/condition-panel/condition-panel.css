@@ -1,0 +1,41 @@
+:local .switchPanel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 5px;
+}
+
+:local .switchList {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+:local .switchContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px;
+  margin: 2px 0px;
+  border-left: 2px solid #b3d9e6;
+  background: #edf6f9;
+}
+
+:local .switchName {
+  font-size: 12px;
+  max-width: 150px;
+}
+
+:local .switchManagementButtons {
+  display: flex;
+}
+
+:local .switchRemoveButton {
+  margin-left: 5px;
+}
+
+:local .addSwitchButton {
+  display: flex;
+  width: 100%;
+  margin-top: 10px;
+}

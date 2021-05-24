@@ -229,6 +229,7 @@ export class SceneEditor {
                 uuid: shortid.generate(),
                 switches: [],
                 actions: [],
+                trigger: null,
               }]
             })
           }  

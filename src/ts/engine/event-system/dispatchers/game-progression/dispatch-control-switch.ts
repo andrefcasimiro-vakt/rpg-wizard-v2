@@ -8,7 +8,6 @@ import { Dispatcher } from "../../dispatcher";
 
 export class DispatchControlSwitch extends Dispatcher {
 
-
   dispatch = (action: IEventAction<ControlSwitchPayload>, player: Character, world: World) => {
     return new Promise((resolve) => { 
       world.gameState.updateSwitchValue(action.payload.switch, action.payload.nextValue)

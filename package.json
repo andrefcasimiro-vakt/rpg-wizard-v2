@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/swift502/Sketchbook",
   "devDependencies": {
+    "@teamsupercell/typings-for-css-modules-loader": "^2.5.1",
     "@types/jquery": "^3.5.1",
     "@types/lodash": "^4.14.149",
     "@types/shortid": "0.0.29",

@@ -25,12 +25,16 @@ module.exports = {
             exclude: /node_modules/,
         },
         {
-        test: /\.css$/,
-        use: [
-            { loader: 'style-loader', options: { injectType: 'singletonStyleTag' } },
-            { loader: 'css-loader' },
-        ]
-        }
+            test: /\.css$/i,
+            use: [
+              "style-loader",
+              "@teamsupercell/typings-for-css-modules-loader",
+              {
+                loader: "css-loader",
+                options: { modules: true }
+              }
+            ]
+          }
       ]
 	},
     performance: {

@@ -3,6 +3,7 @@ import { getEventActionInstance } from "src/ts/editor/utils/event-actions"
 import { getCurrentEventPageUuid } from "src/ts/storage/events"
 import { ConditionPanel } from "../condition-panel/condition-panel"
 import { EventEditor } from "../event-editor"
+import { TriggerPanel } from "../trigger-panel/trigger-panel"
 
 export class EventPage {
   eventEditor: EventEditor
@@ -23,8 +24,18 @@ export class EventPage {
     const currentPageUuid = getCurrentEventPageUuid()
     const page = currentEvent.eventPages.find(eventPage => eventPage.uuid == currentPageUuid)
 
+    // Sidebar panel container
+    const sidebarPanel = document.createElement('div')
+    sidebarPanel.style.width = '30%'
+    sidebarPanel.style.height = '100%'
+    sidebarPanel.style.padding = '10px'
+    pageContent.appendChild(sidebarPanel)
+
     // Page Conditions Panel
-    new ConditionPanel(page, this.eventEditor).initialize(pageContent)
+    new ConditionPanel(page, this.eventEditor).initialize(sidebarPanel)
+
+    // Trigger Panel
+    new TriggerPanel(page, this.eventEditor).initialize(sidebarPanel)
 
     const actionsPanel = document.createElement('div')
     actionsPanel.style.display = 'flex'

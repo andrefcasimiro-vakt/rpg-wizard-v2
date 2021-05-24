@@ -71,6 +71,7 @@ export class PageToolbar {
       uuid: shortid.generate(),
       switches: [],
       actions: [],
+      trigger: null,
     })
 
     addOrUpdateEvent(event)
