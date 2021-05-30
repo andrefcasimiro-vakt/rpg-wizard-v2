@@ -1,0 +1,22 @@
+:local .content {
+  display: flex;
+  flex-direction: column;
+}
+
+:local .animationContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  margin-bottom: 30px;
+  background: var(--primaryLight);
+  border-left: 2px solid var(--primaryDark);
+}
+
+:local .animationContainer label {
+  font-size: 12px;
+}
+
+
+:local input {
+  margin: 10px 0px;
+}

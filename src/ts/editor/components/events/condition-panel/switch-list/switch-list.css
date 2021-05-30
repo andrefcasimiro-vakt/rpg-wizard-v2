@@ -1,0 +1,36 @@
+:local .switchListContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 300px;
+  overflow: scroll;
+}
+
+:local .addSwitchBtn {
+  margin-bottom: 10px;
+  width: 100px;
+}
+
+:local .switchItemBtn {
+
+}
+
+:local .switchItemBtnActive {
+  background: #b3d9e6;
+  color: #000;
+}
+
+:local .actionsContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+:local .selectedSwitchNameLabel {
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+:local .selectedSwitchNameInput {
+  padding: 6px;
+  margin-bottom: 4px;
+}

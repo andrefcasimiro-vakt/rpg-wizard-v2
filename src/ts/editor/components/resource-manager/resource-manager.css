@@ -1,0 +1,50 @@
+:local .container {
+  display: flex;
+  flex-direction: column; 
+}
+
+:local .grid {
+  display: flex;
+  flex-direction: row;
+}
+
+:local .folders {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  border: 2px inset #d9ecf2;
+}
+
+:local .folderContainer {
+  display: flex;
+}
+
+:local .folderButton {
+  width: 100%;
+  border: none;
+  background: none;
+  border: 1px solid #d9ecf2;
+  padding: 10px;
+}
+
+:local .folderButtonActive {
+  background: #d9ecf2;
+}
+
+:local .folderButton:hover {
+  background: #d9ecf2;
+}
+
+:local .sidebarToolbarContainer {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  margin: 0 10px;
+}
+
+:local .button {
+  display: flex;
+  margin: 5px 0;
+  min-height: 30px;
+  align-items: center;
+}

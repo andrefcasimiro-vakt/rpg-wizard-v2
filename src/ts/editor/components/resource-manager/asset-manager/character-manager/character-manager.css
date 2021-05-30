@@ -1,0 +1,11 @@
+:local .container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+:local .animationField {
+  display: flex;
+  margin: 10px 0;
+  flex-direction: column;
+}

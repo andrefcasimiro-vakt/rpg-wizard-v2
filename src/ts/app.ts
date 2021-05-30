@@ -1,5 +1,7 @@
+import shortid = require("shortid");
 import { Editor } from "./editor/editor";
 import { World } from "./engine/entities/world";
+import { initializeStore } from "./storage/utils";
 
 export class App {
 
@@ -7,6 +9,8 @@ export class App {
     if (window.location.search.includes('?mode=game')) {
       new World()
     } else {
+      initializeStore()
+
       new Editor();
     }
 

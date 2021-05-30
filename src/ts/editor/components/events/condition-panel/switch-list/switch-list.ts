@@ -1,25 +1,25 @@
 import shortid = require("shortid");
-import { Theme } from "src/ts/editor/config/theme";
 import { ISwitch } from "src/ts/editor/interfaces/ISwitch";
+import { createElement } from "src/ts/editor/utils/ui";
 import { getSwitches, setSwitches } from "src/ts/storage/switches";
 import { ModalContext } from "../../../modal-context";
+import * as styles from './switch-list.css'
 
 export class SwitchList {
   modalContext: ModalContext = new ModalContext()
 
   onSwitchSelection: (nextSwitch: ISwitch) => void
 
-  targetSwitchUuid: string
+  slotTargetSwitchUuid: string
 
-  // Html
   selectedSwitchUuid: string | null
 
-  constructor(onSwitchSelection: (nextSwitch: ISwitch) => void, targetSwitchUuid: string) {
+  constructor(onSwitchSelection: (nextSwitch: ISwitch) => void, slotTargetSwitchUuid: string) {
     this.onSwitchSelection = onSwitchSelection
 
-    this.targetSwitchUuid = targetSwitchUuid
+    this.slotTargetSwitchUuid = slotTargetSwitchUuid
 
-    this.selectedSwitchUuid = this.targetSwitchUuid
+    this.selectedSwitchUuid = this.slotTargetSwitchUuid
   }
   
   open = () => {
@@ -34,58 +34,42 @@ export class SwitchList {
     title.innerHTML = 'Switches'
     container.appendChild(title)
 
-    const selectedSwitchInput = document.createElement('div')
-    selectedSwitchInput.style.display = 'flex'
-    selectedSwitchInput.style.flexDirection = 'column'
-    selectedSwitchInput.style.width = '100%'
-    selectedSwitchInput.style.height = '300px'
-    selectedSwitchInput.style.overflow = 'scroll'
-    container.appendChild(selectedSwitchInput)
+    const switchListContainer = createElement('div', styles.switchListContainer)
+    container.appendChild(switchListContainer)
 
-    const addSwitchBtn = document.createElement('button')
+    const addSwitchBtn = createElement('button', styles.addSwitchBtn)
     addSwitchBtn.innerHTML = 'Add switch'
-    addSwitchBtn.style.marginBottom = '10px'
-    addSwitchBtn.style.width = '100px'
     addSwitchBtn.onclick = this.addSwitchToProject
-    selectedSwitchInput.appendChild(addSwitchBtn)
+    switchListContainer.appendChild(addSwitchBtn)
 
     getSwitches().forEach(switchItem => {
-      const btn = document.createElement('button')
-      btn.innerHTML = switchItem.name
-      btn.value = switchItem.uuid
+      const switchItemBtn = createElement('button', styles.switchItemBtn) as HTMLButtonElement
+      switchItemBtn.innerHTML = switchItem.name
+      switchItemBtn.value = switchItem.uuid
 
       const isActive = switchItem.uuid == this.selectedSwitchUuid
       if (isActive) {
-        btn.style.background = Theme.PRIMARY_DARK
-        btn.style.color = Theme.DARK
+        switchItemBtn.className = `${styles.switchItemBtn} ${styles.switchItemBtnActive}`
       }
 
-      btn.onclick = () => this.handleSelection(switchItem.uuid)
-
-      selectedSwitchInput.appendChild(btn)
+      switchItemBtn.onclick = () => this.handleSelection(switchItem.uuid)
+      switchListContainer.appendChild(switchItemBtn)
     })
 
-    const actionsContainer = document.createElement('div')
-    actionsContainer.style.display = 'flex'
-    actionsContainer.style.flexDirection = 'column'
+    const actionsContainer = createElement('div', styles.actionsContainer)
     container.appendChild(actionsContainer)
 
-
-    const selectedSwitchNameLabel = document.createElement('label')
+    const selectedSwitchNameLabel = createElement('label', styles.selectedSwitchNameLabel) as HTMLLabelElement
     selectedSwitchNameLabel.innerHTML = 'Switch name '
-    selectedSwitchNameLabel.style.fontSize = '12px'
-    selectedSwitchNameLabel.style.marginBottom = '4px'
     selectedSwitchNameLabel.htmlFor = 'switchName'
     actionsContainer.appendChild(selectedSwitchNameLabel)
 
     const isDisabled = switches.length <= 0 || !switches?.find(x => x.uuid == this.selectedSwitchUuid)
 
-    const selectedSwitchNameInput = document.createElement('input')
+    const selectedSwitchNameInput = createElement('input', styles.selectedSwitchNameInput) as HTMLInputElement
     selectedSwitchNameInput.id = 'switchName'
-    selectedSwitchNameInput.style.padding = '6px'
     selectedSwitchNameInput.value = switches.find(x => x.uuid == this.selectedSwitchUuid)?.name || ''
     selectedSwitchNameInput.disabled = isDisabled
-    selectedSwitchNameInput.style.marginBottom = '4px'
     selectedSwitchNameInput.onchange = this.handleSwitchRename
 
     actionsContainer.appendChild(selectedSwitchNameInput)
@@ -136,5 +120,4 @@ export class SwitchList {
 
     this.modalContext.close()
   }
-
 }

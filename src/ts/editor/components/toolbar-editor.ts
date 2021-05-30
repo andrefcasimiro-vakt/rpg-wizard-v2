@@ -10,6 +10,10 @@ import { ToolbarMode } from "../enums/ToolbarMode";
 import { DatabaseTabs } from "../enums/database";
 import { StartingPositionIcon } from "../icons/starting-position";
 import { PlayIcon } from "../icons/play-icon";
+import { ResourceManager } from "./resource-manager/resource-manager";
+import { ResourceIcon } from "../icons/resource-icon";
+import { DatabaseActors } from "./database/database-actors/database-actors";
+import { DatabaseAnimations } from "./database/database-animations/database-animations";
 
 export class ToolbarEditor implements IEditor {
   
@@ -24,6 +28,12 @@ export class ToolbarEditor implements IEditor {
   public onLoad: () => void;
 
   private _mode: ToolbarMode = ToolbarMode.DRAW
+
+  // Database instances
+  private databaseActors = new DatabaseActors()
+  private databaseAnimations = new DatabaseAnimations()
+
+  private resourceManager = new ResourceManager()
 
   public get mode() {
     return this._mode
@@ -76,6 +86,7 @@ export class ToolbarEditor implements IEditor {
     this.toolbarPanelGUI.appendChild(this.createButton('Save', SaveIcon(1.5), this.save))
     this.toolbarPanelGUI.appendChild(this.createButton('Load', LoadIcon(1.5), this.load))
     this.toolbarPanelGUI.appendChild(this.createButton('Database', DatabaseIcon(1.5), this.openDatabase))
+    this.toolbarPanelGUI.appendChild(this.createButton('Resources', ResourceIcon(1.5), this.openResourceManager))
 
     // Paint BTN
     const paintBtn = this.createButton(
@@ -147,6 +158,10 @@ export class ToolbarEditor implements IEditor {
 
   openDatabase = () => {
     window.location.hash = DatabaseTabs.Actors
+  }
+
+  openResourceManager = () => {
+    this.resourceManager.open()
   }
 
   paintMode = () => {

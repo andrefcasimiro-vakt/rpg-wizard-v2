@@ -37,6 +37,7 @@ export class PageToolbar {
     const pagePanel = document.createElement('ul')
     pagePanel.style.display = 'flex'
     pagePanel.style.paddingTop = '10px'
+    pagePanel.style.overflow = 'scroll'
     container.appendChild(pagePanel)
 
     const currentEventPageUuid = getCurrentEventPageUuid()

@@ -1,0 +1,36 @@
+:local .databaseContainer {
+  display: flex;
+}
+
+:local .sidebarPanel {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+}
+
+:local .contentPanel {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: #d9ecf2;
+  padding: 10px;
+}
+
+:local .databaseSidebarButton {
+  display: flex;
+  width: 100%;
+  padding: 5px;
+  border: none;
+}
+
+:local .databaseSidebarButton a {
+  width: 100%;
+  color: #000;
+  font-size: 16px;
+  text-decoration: none;
+}
+
+:local .databaseSidebarButtonActive {
+  display: flex;
+  background: #d9ecf2;
+}

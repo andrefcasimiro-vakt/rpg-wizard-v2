@@ -1,5 +1,4 @@
 import { BoxGeometry, Intersection, Mesh, MeshBasicMaterial, Vector3 } from "three";
-import { DatabaseActors } from "./components/database/database-actors";
 import { EntityEditor } from "./components/entity-editor";
 import { InputManager } from "./components/input-manager";
 import { MapEditor } from "./components/map-editor";
@@ -30,9 +29,6 @@ export class Editor {
   // Managers
   private inputManager: InputManager
 
-  // Database
-  private databaseActors: DatabaseActors
-
   // Html Elements
   private navbarUi: HTMLElement
   private sidebarUi: HTMLElement
@@ -60,9 +56,6 @@ export class Editor {
     // Managers
     this.inputManager = new InputManager();
     this.inputManager.onKeyPressedChange = this.handleKeys;
-
-    // Database
-    this.databaseActors = new DatabaseActors()
 
     // Events
     this.eventEditor = new EventEditor()

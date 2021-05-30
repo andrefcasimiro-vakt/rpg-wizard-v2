@@ -52,7 +52,6 @@ export class ConditionPanel {
         createElementWithTooltip(switchListButton, 'Select a switch from the list')
       )
 
-
       const switchRemoveButton = document.createElement('button')
       switchRemoveButton.className = styles.switchRemoveButton
       switchRemoveButton.onclick = () => this.removeSwitch(switchItem.uuid)
@@ -118,7 +117,7 @@ export class ConditionPanel {
     currentEvent.eventPages.forEach((page, index) => {
       if (page.uuid == this.page.uuid) {
         const entry = currentEvent.eventPages[index]
-        console.log(entry)
+
         for (let i = 0; i < entry.switches.length; i++) {
           if (entry.switches[i].uuid === targetSwitchUuid) {
             entry.switches[i] = nextSwitch

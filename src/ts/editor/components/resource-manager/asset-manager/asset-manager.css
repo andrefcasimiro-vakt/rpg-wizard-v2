@@ -1,0 +1,60 @@
+:local .container {
+  display: flex;
+}
+
+:local .grid {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px inset;
+  padding: 10px;
+}
+
+:local .headerText {
+  margin-bottom: 20px;
+  padding: 5px 0;
+}
+
+:local .assetSettingsContainer {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+:local .assetConfigurationContent {
+  display: flex;
+  flex-direction: column;
+}
+
+:local .childrenContainer {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+}
+
+:local .childrenContent {
+  display: flex;
+  flex-direction: column;
+}
+
+:local input {
+  padding: 5px;
+  margin: 20px 0;
+}
+
+:local .submitButton {
+  padding: 5px;
+
+}
+
+:local .modelViewerContainer {
+  display: flex; 
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+:local .modelViewerContainer canvas {
+  border: 2px solid #d9ecf2;
+}

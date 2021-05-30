@@ -1,7 +1,6 @@
 import { CharacterStateBase, Idle, JumpIdle, StartWalk, StartWalkDirection } from ".";
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { Character } from "../character";
-
 export class DropIdle extends CharacterStateBase implements ICharacterState {
   constructor(character: Character)
 	{

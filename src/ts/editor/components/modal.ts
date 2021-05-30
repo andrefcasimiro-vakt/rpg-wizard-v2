@@ -45,6 +45,8 @@ export class Modal {
     var modalContainer = document.querySelector('#modal') as HTMLElement
     var modalContent = document.querySelector('#modalContent') as HTMLElement
 
+    modalContent.innerHTML = ''
+
     modalContainer.style.display = 'flex'
 
     modalContent.appendChild(content)
@@ -65,6 +67,7 @@ export class Modal {
     modalContent.innerHTML = ''
     modalContent.appendChild(content)
   }
+  
 }
 
 Modal.initialize()

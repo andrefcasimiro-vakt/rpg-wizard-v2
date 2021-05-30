@@ -1,6 +1,7 @@
 import { Theme } from "../config/theme"
 import { DatabaseTabs } from "../enums/database"
 import { includesHash } from "./modal"
+import * as styles from './ui.css'
 
 export const createElement = (type: string, className: string): HTMLElement => {
   var el = document.createElement(type)
@@ -62,33 +63,6 @@ export const createActionButtonGUI = (label: string, isActive?: boolean) => {
   btnStyle.background = isActive ? `linear-gradient(to top, ${Theme.PRIMARY_DARK}, ${Theme.PRIMARY})` : Theme.NEUTRAL
     
   return btn
-}
-
-export const createDatabaseSidebar = (activeHash: string) => {
-  const sidebar = document.createElement('ul')
-
-  const style = sidebar.style
-  style.display = 'flex';
-  style.flexDirection = 'column';
-
-  Object.entries(DatabaseTabs).forEach((option) => {
-    const isActive = includesHash(option[1])
-
-    const item = document.createElement('li')
-    item.innerHTML = `
-      <button style="
-        width: 100%;
-        background: ${isActive ? Theme.PRIMARY : Theme.NEUTRAL};
-        border: 1px solid ${isActive ? Theme.PRIMARY_DARK : Theme.NEUTRAL_DARK};
-      ">
-        <a href="${option[1]}">${option[0]}</a>
-      </button>
-    `
-
-    sidebar.appendChild(item)
-  })
-
-  return sidebar
 }
 
 export const getActionLabel = (label: string) => {
