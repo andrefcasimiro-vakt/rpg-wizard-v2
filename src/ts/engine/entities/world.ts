@@ -1,4 +1,4 @@
-import { ACESFilmicToneMapping, BackSide, BoxGeometry, Clock, MathUtils, Mesh, MeshBasicMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PointLight, Scene, WebGLRenderer } from "three";
+import { ACESFilmicToneMapping, AnimationClip, BackSide, BoxGeometry, Clock, MathUtils, Mesh, MeshBasicMaterial, Object3D, PCFSoftShadowMap, PerspectiveCamera, PointLight, Scene, WebGLRenderer } from "three";
 import { Sky } from "./sky";
 import * as CANNON from 'cannon'
 import { IUpdatable } from "../interfaces/IUpdatable";
@@ -11,6 +11,9 @@ import { Character } from "../characters/character";
 import { Scenario } from "./scenario";
 import { CannonDebugRenderer } from '../../../lib/cannon/CannonDebugRenderer'
 import { GameState } from "./game-state";
+import { DatabaseAnimationsStorage } from "src/ts/storage";
+import { LoadingManager } from "../core/loading-manager";
+import { Group } from "three/src/Three";
 
 const MOUSE_SENSITIVITY = 0.3
 
@@ -20,6 +23,11 @@ var skyboxMaterial = new MeshBasicMaterial({ color: 0xffffee, side: BackSide })
 var skybox = new Mesh(skyboxGeometry, skyboxMaterial)
 
 export class World {
+  public animations: AnimationClip[] = []
+  public animationModelReference: Object3D
+
+  public loadingManager: LoadingManager
+
   public renderer: WebGLRenderer
   public camera: PerspectiveCamera
   public graphicsWorld: Scene
@@ -54,6 +62,8 @@ export class World {
   private debugPhysics: boolean = true
 
   constructor(sceneUuid?: string) {
+    this.loadingManager = new LoadingManager(this)
+
     // Renderer
     this.renderer = new WebGLRenderer()
     this.renderer.setPixelRatio(window.devicePixelRatio)
@@ -64,13 +74,13 @@ export class World {
     this.renderer.shadowMap.type = PCFSoftShadowMap
     document.body.appendChild(this.renderer.domElement)
 
-
     window.addEventListener('resize', this.onWindowResize, false)
   
     // Scene
     this.graphicsWorld = new Scene()
     this.camera = new PerspectiveCamera(80, window.innerWidth / window.innerHeight, 0.1, 1010)
     this.camera.position.set(0, 2, 0)
+
     // Physics
     this.physicsWorld = new CANNON.World()
     this.physicsWorld.gravity.set(0, -9.81, 0)
@@ -97,8 +107,6 @@ export class World {
 
     this.cannonDebugRenderer = new CannonDebugRenderer( this.graphicsWorld, this.physicsWorld );
  
-    // new OrbitControls(this.camera, this.renderer.domElement)
-
     this.loadScene(sceneUuid)
 
     this.render(this)
@@ -116,16 +124,10 @@ export class World {
       this.cannonDebugRenderer.update();
     }
 
-    // Lerp time scale
-  //  this.params['Time_Scale'] = MathUtils.lerp((this.params?.Time_Scale || 1), this.timeScaleTarget, 0.2)
   }
 
   updatePhysics = (timestep: number) => {
     this.physicsWorld.step(this.physicsFrameTime, timestep)
-
-    // this.characters.forEach(character => {
-    //   if (this.isOutOfBounds)
-    // })
   }
 
   render = (world: World) => {
@@ -179,9 +181,31 @@ export class World {
   }
 
   loadScene = (sceneUuid: string) => {
-    this.scenario = new Scenario(this, getCurrentMapUuid())
+    // Retrieve animations first
+    const animationsToLoad = DatabaseAnimationsStorage.get() || []
 
-    this.scenario.launch(this)
+    animationsToLoad.forEach(animationToLoad => {
+      this.loadingManager.loadFbx(animationToLoad.animationClipPath, (result) => {
+
+        // @ts-ignore
+        const payload = result?.animations?.[0]
+        payload.name = animationToLoad.name
+        this.animations.push(payload)
+        
+        if (!this.animationModelReference) {
+          this.animationModelReference = result
+        }
+
+        if (this.animations.length == animationsToLoad.length) {
+          // Has finished loading all animations, create the scenario
+
+          this.scenario = new Scenario(this, getCurrentMapUuid())
+
+          this.scenario.launch(this)
+        }
+      })
+
+    })
   }
 
   clearEntities = () => {

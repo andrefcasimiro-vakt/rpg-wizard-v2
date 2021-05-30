@@ -1,6 +1,6 @@
 import shortid = require("shortid");
-import { createElement, createElementWithTooltip } from "src/ts/editor/utils/ui"
-import { addResource, getResources } from "src/ts/storage/resources";
+import { IResource } from "src/ts/editor/interfaces/IResource";
+import { createElement } from "src/ts/editor/utils/ui"
 import { ModalContext } from "../../modal-context"
 import { ModelViewer } from "../../model-viewer/model-viewer";
 import * as styles from './asset-manager.css'
@@ -14,11 +14,7 @@ export class AssetManager {
 
   modelViewer: ModelViewer
 
-  public handleOnSave: (
-    assetUuid: string,
-    assetName: string,
-    assetUrl: string,
-  ) => void
+  public handleOnSave: (payload: IResource) => void
 
   open = () => {
     if (!this.assetUuid) {
@@ -62,8 +58,7 @@ export class AssetManager {
     submitButton.innerHTML = 'Save changes'
     submitButton.style.marginTop = '20px'
     submitButton.onclick = () => {
-      console.log('invoked')
-      this.handleOnSave(this.assetUuid, this.assetName, this.assetUrl)
+      this.handleOnSave(this.getPayload())
     }
     parent.appendChild(submitButton)
   }
@@ -147,5 +142,13 @@ export class AssetManager {
 
   close = () => {
     this.modalContext.close()
+  }
+
+  getPayload = (): IResource => {
+    return {
+      uuid: this.assetUuid,
+      displayName: this.assetName,
+      downloadUrl: this.assetUrl,
+    }
   }
 }

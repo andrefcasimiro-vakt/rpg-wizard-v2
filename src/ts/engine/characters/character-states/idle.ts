@@ -1,6 +1,8 @@
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { Character } from "../character";
 import { CharacterStateBase, JumpIdle, Walk } from ".";
+import { DatabaseAnimationsStorage } from "src/ts/storage";
+import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
 
 export class Idle extends CharacterStateBase implements ICharacterState
 {
@@ -12,7 +14,8 @@ export class Idle extends CharacterStateBase implements ICharacterState
 		this.character.velocitySimulator.mass = 10;
 
 		this.character.setArcadeVelocityTarget(0);
-		this.playAnimation('idle', 0.1);
+
+		this.playAnimation(DefaultAnimations.Idle, 0.1);
 	}
 
 	public update(timeStep: number): void
@@ -33,14 +36,16 @@ export class Idle extends CharacterStateBase implements ICharacterState
 
 		if (this.anyDirection())
 		{
-			if (this.character.velocity.length() > 0.5)
-			{
-				this.character.setState(new Walk(this.character));
-			}
-			else
-			{
-				this.setAppropriateStartWalkState();
-			}
+			this.character.setState(new Walk(this.character));
+
+			// if (this.character.velocity.length() > 0.5)
+			// {
+			// 	this.character.setState(new Walk(this.character));
+			// }
+			// else
+			// {
+			// 	this.setAppropriateStartWalkState();
+			// }
 		}
 	}
 }

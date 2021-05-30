@@ -1,24 +1,30 @@
 import _ = require("lodash");
-import { MeshPhongMaterial, Object3D, Quaternion, Vector3 } from "three";
+import { Group, MeshPhongMaterial, Object3D, Quaternion, Vector3 } from "three";
 import { Space } from "../enums/space";
 import { SimulationFrame } from "../physics/spring-simulation/simulation-frame";
 import * as CANNON from 'cannon'
 
 // Mesh
-export function setupMeshProperties(child: any): void {
+export function setupMeshProperties(child: Object3D): void {
   child.castShadow = true 
   child.receiveShadow = true
-
-  if (child.material.map !== null) {
+  // @ts-ignore
+  if (child?.material?.map !== null) {
     let mat = new MeshPhongMaterial()
     mat.shininess = 0
-    mat.name = child.material.name
-    mat.map = child.material.map
-    mat.map.anisotropy = 4
-    mat.aoMap = child.material.aoMap
-    mat.transparent = child.material.transparent
-    mat.skinning = child.material.skinning
+      // @ts-ignore
+    mat.name = child.material?.name
+      // @ts-ignore
+    mat.map = child.material?.map
+    // mat.map?.anisotropy = 4
+      // @ts-ignore
+    mat.aoMap = child.material?.aoMap
+      // @ts-ignore
+    mat.transparent = child.material?.transparent
+      // @ts-ignore
+    mat.skinning = child.material?.skinning
 
+      // @ts-ignore
     child.material = mat
   }
 

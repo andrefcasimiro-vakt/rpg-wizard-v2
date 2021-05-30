@@ -29,6 +29,10 @@ export abstract class Database {
     window.location.hash = this.hash
   }
 
+  update = () => {
+    Modal.refresh(this.getGui())
+  }
+
   getGui = () => {
     const dbLayout = createDatabaseLayout()
 

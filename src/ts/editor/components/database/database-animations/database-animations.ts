@@ -1,7 +1,7 @@
 import { DatabaseTabs } from "src/ts/editor/enums/database"
 import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations"
 import { createElement } from "src/ts/editor/utils/ui"
-import { getDatabaseAnimations, updateAnimation } from "src/ts/storage/database_animations"
+import { DatabaseAnimationsStorage } from "src/ts/storage/database-animations"
 import { Database } from "../database"
 import * as styles from './database-animations.css'
 
@@ -17,7 +17,7 @@ export class DatabaseAnimations extends Database {
   getChildren = () => {
     const content = createElement('div', styles.content) as HTMLDivElement
     
-    const animations = getDatabaseAnimations()
+    const animations = DatabaseAnimationsStorage.get()
 
     Object.keys(DefaultAnimations).forEach(defaultAnimationName => {
       const existingAnimation = animations.find(x => x.uuid == defaultAnimationName)
@@ -29,7 +29,7 @@ export class DatabaseAnimations extends Database {
         var animationNameInput = this.renderAnimationInput(
           'Animation Name',
           existingAnimation.name,
-          (value) => updateAnimation({
+          (value) => DatabaseAnimationsStorage.update({
             ...existingAnimation,
             name: value,
           }),
@@ -42,7 +42,7 @@ export class DatabaseAnimations extends Database {
         var animationUrlInput = this.renderAnimationInput(
           `Animation Clip URL`,
           existingAnimation.animationClipPath,
-          (value) => updateAnimation({
+          (value) => DatabaseAnimationsStorage.update({
             ...existingAnimation,
             animationClipPath: value,
           })

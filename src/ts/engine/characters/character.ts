@@ -13,10 +13,16 @@ import { applyVectorMatrixXZ, cannonVector, getForward, getSignedAngleBetweenVec
 import { GroundImpactData } from "./ground-impact-data";
 import * as CANNON from 'cannon'
 import { Idle } from "./character-states";
+import { IActor } from "src/ts/editor/interfaces/IActor";
+import { DatabaseAnimations } from "src/ts/editor/components/database/database-animations/database-animations";
+import { DatabaseAnimationsStorage } from "src/ts/storage";
+import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 
 const MOVE_SPEED = 4
 
 export class Character extends Object3D implements IWorldEntity {
+  actor: IActor
+
   public entityType = EntityType.PLAYER
   public updateOrder = 1
 
@@ -70,11 +76,15 @@ export class Character extends Object3D implements IWorldEntity {
 
   isControllable = true
 
-  constructor(gltf: any) {
+  constructor(model: Group, actor: IActor, world: World) {
     super()
 
-    this.readCharacterData(gltf)
-    this.setAnimations(gltf.animations)
+    this.actor = actor
+    this.world = world
+
+    this.readCharacterData(model)
+
+    this.setAnimations(this.world.animations)
 
     // The visuals group is centered for easy character tilting
     this.tiltContainer = new Group()
@@ -84,9 +94,10 @@ export class Character extends Object3D implements IWorldEntity {
     this.modelContainer = new Group()
     this.modelContainer.position.y = -0.57
     this.tiltContainer.add(this.modelContainer)
-    this.modelContainer.add(gltf.scene)
 
-    this.mixer = new AnimationMixer(gltf.scene)
+    this.modelContainer.add(model)
+
+    this.mixer = new AnimationMixer(model)
 
     this.velocitySimulator = new VectorSpringSimulator(60, this.defaultVelocitySimulatorMass, this.defaultVelocitySimulatorDamping)
     this.rotationSimulator = new RelativeSpringSimulator(60, this.defaultRotationSimulatorMass, this.defaultRotationSimulatorDamping)
@@ -149,7 +160,7 @@ export class Character extends Object3D implements IWorldEntity {
     this.setState(new Idle(this))
   }
   
-  setAnimations = (animations: []): void => {
+  setAnimations = (animations: Group[]): void => {
     this.animations = animations
   }
 
@@ -226,36 +237,18 @@ export class Character extends Object3D implements IWorldEntity {
     }
   }
 
-  readCharacterData = (gltf: any): void => {
-    gltf.scene.traverse((child => {
-      if (child.isMesh) {
-        setupMeshProperties(child)
-
-        if (child.material !== undefined) {
-          this.materials.push(child.material)
-        }
+  readCharacterData = (fbx: Group): void => {
+    fbx.children.forEach(child => {
+      setupMeshProperties(child)
+      // @ts-ignore
+      if (child?.material) {
+        // @ts-ignore
+        this.materials.push(child.material)
       }
-    }))
+    })
   }
 
   handleKeyboardEvent = (event: KeyboardEvent, code: string, pressed: boolean): void => {
-    // if (this.controlledObject !== undefined) {
-    //   this.controlledObject.handleKeyboardEvent(event, code, pressed)
-    // }
-
-    // console.log('code: ', code)
-
-    // // Free camera
-    // if (code === 'KeyC' && pressed === true && event.shiftKey === true) {
-    //   this.resetControls()
-
-    //   this.world.cameraOperator.characterCaller = this
-    //   this.world.inputManager.setInputReceiver(this.world.cameraOperator)
-    // } else if (code === 'KeyR' && pressed === true && event.shiftKey === true) {
-    //   // this.world.restartScenario()
-    //   return
-    // }
-
     for (const action in this.actions) {
       if (this.actions.hasOwnProperty(action)) {
         const binding = this.actions[action]
@@ -377,11 +370,10 @@ export class Character extends Object3D implements IWorldEntity {
   }
 
   setAnimation = (clipName: string, fadeIn: number): number => {
-    if (this.mixer !== undefined) {
-      // GLTF
-      let clip = AnimationClip.findByName(this.animations, clipName)
-
-      let action = this.mixer.clipAction(clip)
+    if (this.mixer !== undefined && this.world != undefined) {
+      // @ts-ignore
+      let clip = AnimationClip.findByName(this.world.animations || [], clipName)
+      let action =   this.mixer.clipAction(clip)
       if (action === null) {
         return 0
       }

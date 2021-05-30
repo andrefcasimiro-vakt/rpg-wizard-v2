@@ -2,7 +2,7 @@ import { IMap } from "../../editor/interfaces/IMap"
 import { IMapEvent } from "../../editor/interfaces/IMapEvent"
 import { IMapGround } from "../../editor/interfaces/IMapGround"
 import { getMapByUuid, getMaps } from "../../storage/maps"
-import {  BoxGeometry, Mesh, MeshBasicMaterial, Object3D, PointLight, Vector3 } from "three"
+import {  BoxGeometry, Group, Mesh, MeshBasicMaterial, Object3D, PointLight, Vector3 } from "three"
 import { Character } from "../characters/character"
 import { LoadingManager } from "../core/loading-manager"
 import { UIManager } from "../core/ui-manager"
@@ -11,6 +11,10 @@ import { BoxCollider } from "../physics/colliders/box-collider"
 import { cannonQuaternion, cannonVector } from "../utils/function-library"
 import { CollisionGroups } from "../enums/collision-groups"
 import { Event } from "../event-system/event"
+import { DatabaseActorsStorage } from "src/ts/storage"
+import { getResources } from "src/ts/storage/resources"
+import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter"
+import { SkeletonUtils } from "three/examples/jsm/utils/SkeletonUtils"
 
 
 var light = new PointLight(0xffffff)
@@ -128,8 +132,13 @@ export class Scenario {
   }
 
   spawnPlayer = (initialPosition: Vector3) => {
-    this.loadingManager.loadGLTF('build/assets/boxman.glb', (model) => {
-      let player = new Character(model)
+    const actor = DatabaseActorsStorage.get()?.[0]
+    const actorGraphic = getResources()?.characters?.find(x => x.uuid == actor.graphicUuid) as IResourceCharacter
+
+    this.loadingManager.loadFbx(actorGraphic.downloadUrl, (model: Group) => {
+      model.scale.set(Number(actorGraphic.scale), Number(actorGraphic.scale), Number(actorGraphic.scale))
+
+      let player = new Character(model, actor, this.world)
 
       player.setPosition(initialPosition.x, initialPosition.y, initialPosition.z)
 

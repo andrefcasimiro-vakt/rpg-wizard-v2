@@ -1,3 +1,4 @@
+import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
 import { CharacterStateBase, Idle, StartWalk, StartWalkDirection } from ".";
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { Character } from "../character";
@@ -13,7 +14,7 @@ export class Falling extends CharacterStateBase implements ICharacterState {
 		this.character.arcadeVelocityIsAdditive = true;
 		this.character.setArcadeVelocityInfluence(0.05, 0, 0.05);
 
-		this.playAnimation('falling', 0.3);
+		this.playAnimation(DefaultAnimations.Falling, 0.3);
 	}
 
 	public update(timeStep: number): void

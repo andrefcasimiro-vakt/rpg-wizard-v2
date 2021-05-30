@@ -1,3 +1,4 @@
+import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
 import { CharacterStateBase, Idle, StartWalk, StartWalkDirection, JumpRunning, Walk, EndWalk } from ".";
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { Character } from "../character";
@@ -12,7 +13,7 @@ export class Sprint extends CharacterStateBase implements ICharacterState {
 		this.character.rotationSimulator.mass = 50;
 
 		this.character.setArcadeVelocityTarget(1.4);
-		this.playAnimation('sprint', 0.1);
+		this.playAnimation(DefaultAnimations.Sprint, 0.1);
 	}
 
 	public update(timeStep: number): void
@@ -38,7 +39,7 @@ export class Sprint extends CharacterStateBase implements ICharacterState {
 
 		if (this.noDirection())
 		{
-			this.character.setState(new EndWalk(this.character));
+			this.character.setState(new Idle(this.character));
 		}
 	}
 }

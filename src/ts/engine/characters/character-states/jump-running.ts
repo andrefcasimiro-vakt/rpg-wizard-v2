@@ -1,3 +1,4 @@
+import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
 import { CharacterStateBase, Idle, StartWalk, StartWalkDirection, Falling } from ".";
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { Character } from "../character";
@@ -10,7 +11,7 @@ export class JumpRunning extends CharacterStateBase implements ICharacterState {
 		super(character);
 
 		this.character.velocitySimulator.mass = 100;
-		this.playAnimation('jump_running', 0.03);
+		this.playAnimation(DefaultAnimations.JumpRunning, 0.03);
 		this.alreadyJumped = false;
 	}
 

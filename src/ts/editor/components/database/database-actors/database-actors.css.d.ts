@@ -1,6 +1,12 @@
 declare namespace DatabaseActorsCssNamespace {
   export interface IDatabaseActorsCss {
+    actorButton: string;
+    actorButtonActive: string;
+    actorItem: string;
+    actorPanelContainer: string;
+    actorsListContainer: string;
     content: string;
+    field: string;
   }
 }
 

@@ -1,5 +1,6 @@
 :local .databaseContainer {
   display: flex;
+  height: 80vh;
 }
 
 :local .sidebarPanel {
@@ -14,6 +15,7 @@
   width: 100%;
   background: #d9ecf2;
   padding: 10px;
+  overflow: scroll;
 }
 
 :local .databaseSidebarButton {

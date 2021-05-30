@@ -83,17 +83,19 @@ export abstract class CharacterStateBase implements ICharacterState {
     let range = Math.PI
     let angle = getSignedAngleBetweenVectors(this.character.orientation, this.character.getCameraRelativeMovementVector())
 
-    if (angle > range * 0.8) {
-      this.character.setState(new StartWalk(this.character, StartWalkDirection.BackLeft))
-    } else if (angle < -range * 0.8) {
-      this.character.setState(new StartWalk(this.character, StartWalkDirection.BackRight))
-    } else if (angle > range * 0.3) {
-      this.character.setState(new StartWalk(this.character, StartWalkDirection.Left))
-    } else if (angle < -range * 0.3) {
-      this.character.setState(new StartWalk(this.character, StartWalkDirection.Right))
-    } else {
-      this.character.setState(new StartWalk(this.character, StartWalkDirection.Forward))
-    }
+    this.character.setState(new Walk(this.character))
+
+    // if (angle > range * 0.8) {
+    //   this.character.setState(new StartWalk(this.character, StartWalkDirection.BackLeft))
+    // } else if (angle < -range * 0.8) {
+    //   this.character.setState(new StartWalk(this.character, StartWalkDirection.BackRight))
+    // } else if (angle > range * 0.3) {
+    //   this.character.setState(new StartWalk(this.character, StartWalkDirection.Left))
+    // } else if (angle < -range * 0.3) {
+    //   this.character.setState(new StartWalk(this.character, StartWalkDirection.Right))
+    // } else {
+    //   this.character.setState(new StartWalk(this.character, StartWalkDirection.Forward))
+    // }
   }
 
   protected playAnimation(animationName: string, fadeIn: number): void {

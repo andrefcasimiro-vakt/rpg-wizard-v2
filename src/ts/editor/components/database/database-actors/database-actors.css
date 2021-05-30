@@ -1,3 +1,53 @@
 :local .content {
-
+  display: flex;
 }
+
+:local .actorsListContainer {
+  display: flex;
+  width: 100px;
+}
+
+:local .actorItem {
+  display: flex;
+  width: 100%;
+  border: 1px solid var(--primaryDark);
+  height: 30px;
+}
+
+:local .actorButton {
+  width: 100%;
+  background: var(--primary);
+  border: none;
+}
+:local .actorButton:hover {
+  width: 100%;
+  background: var(--primaryLight);
+  border: none;
+}
+
+:local .actorButtonActive {
+  width: 100%;
+  background: var(--primaryLight);
+  border: none;
+}
+
+:local .actorPanelContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin: 0px 10px;
+  border-left: 2px solid var(--primaryDark);
+  background: var(--primaryLight);
+  padding: 10px;
+}
+
+:local .field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+:local .field button {
+  max-height: 30px;
+}
+

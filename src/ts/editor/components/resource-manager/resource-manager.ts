@@ -114,6 +114,18 @@ export class ResourceManager {
     removeResourceButton.onclick = this.handleRemoveResource
     sidebarToolbarContainer.appendChild(removeResourceButton)
 
+    if (this.onResourceSelection) {
+      const saveBtn = createElement('button', '') as HTMLButtonElement
+      saveBtn.innerHTML = 'Select resource'
+      saveBtn.disabled = !this.selectedResourceUuid
+      
+      saveBtn.onclick = () => {
+        const resourceFolder = getResources()?.[this.selectedResourceFolder] as IResource[] || []
+        this.onResourceSelection(resourceFolder.find(x => x.uuid == this.selectedResourceUuid))
+      }
+      container.appendChild(saveBtn)
+    }
+
     return container
   }
 
@@ -137,8 +149,8 @@ export class ResourceManager {
     const Manager = assetManagers[this.selectedResourceFolder] as typeof AssetManager
     const instance = new Manager()
     
-    instance.handleOnSave = (assetUuid, assetName, assetUrl) => {
-      this.handleChangesToResource({ uuid: assetUuid, displayName: assetName, downloadUrl: assetUrl }, 'add', instance)
+    instance.handleOnSave = (payload: IResource) => {
+      this.handleChangesToResource(payload, 'add', instance)
     }
 
     instance.open()
@@ -148,8 +160,8 @@ export class ResourceManager {
     const Manager = assetManagers[this.selectedResourceFolder] as typeof AssetManager
     const instance = new Manager()
     
-    instance.handleOnSave = (assetUuid, assetName, assetUrl) => {
-      this.handleChangesToResource({ uuid: assetUuid, displayName: assetName, downloadUrl: assetUrl }, 'update', instance)
+    instance.handleOnSave = (payload: IResource) => {
+      this.handleChangesToResource(payload, 'update', instance)
     }
 
     const resources = getResources()?.[this.selectedResourceFolder] as IResource[]

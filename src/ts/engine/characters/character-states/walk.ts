@@ -1,12 +1,13 @@
 import { Character } from "../character";
 import { Idle, CharacterStateBase, EndWalk, Sprint, JumpRunning } from ".";
+import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
 
 export class Walk extends CharacterStateBase {
   constructor(character: Character) {
     super(character)
 
     this.character.setArcadeVelocityTarget(0.8)
-    this.playAnimation('run', 0.1)
+    this.playAnimation(DefaultAnimations.Walk, 0.1)
   }
 
   update = (timestep: number): void => {
@@ -20,13 +21,8 @@ export class Walk extends CharacterStateBase {
   onInputChange = (): void => {
     super.onInputChange()
 
-
     if (this.noDirection()) {
-      if (this.character.velocity.length() > 1) {
-        this.character.setState(new EndWalk(this.character))
-      } else {
-        this.character.setState(new Idle(this.character))
-      }
+      this.character.setState(new Idle(this.character))
 
       return
     }
