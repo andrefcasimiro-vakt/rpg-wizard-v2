@@ -1,5 +1,5 @@
 import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
-import { CharacterStateBase, Idle, StartWalk, StartWalkDirection, JumpRunning, Walk, EndWalk } from ".";
+import { CharacterStateBase, Idle, JumpRunning, Walk } from ".";
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { Character } from "../character";
 

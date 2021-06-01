@@ -1,5 +1,5 @@
 import { Character } from "../character";
-import { Idle, CharacterStateBase, EndWalk, Sprint, JumpRunning } from ".";
+import { Idle, CharacterStateBase, Sprint, JumpRunning } from ".";
 import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
 
 export class Walk extends CharacterStateBase {

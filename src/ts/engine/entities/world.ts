@@ -11,9 +11,7 @@ import { Character } from "../characters/character";
 import { Scenario } from "./scenario";
 import { CannonDebugRenderer } from '../../../lib/cannon/CannonDebugRenderer'
 import { GameState } from "./game-state";
-import { DatabaseAnimationsStorage } from "src/ts/storage";
 import { LoadingManager } from "../core/loading-manager";
-import { Group } from "three/src/Three";
 
 const MOUSE_SENSITIVITY = 0.3
 
@@ -23,9 +21,6 @@ var skyboxMaterial = new MeshBasicMaterial({ color: 0xffffee, side: BackSide })
 var skybox = new Mesh(skyboxGeometry, skyboxMaterial)
 
 export class World {
-  public animations: AnimationClip[] = []
-  public animationModelReference: Object3D
-
   public loadingManager: LoadingManager
 
   public renderer: WebGLRenderer
@@ -59,7 +54,7 @@ export class World {
 
   private cannonDebugRenderer: CannonDebugRenderer
 
-  private debugPhysics: boolean = true
+  private debugPhysics: boolean = false
 
   constructor(sceneUuid?: string) {
     this.loadingManager = new LoadingManager(this)
@@ -181,31 +176,9 @@ export class World {
   }
 
   loadScene = (sceneUuid: string) => {
-    // Retrieve animations first
-    const animationsToLoad = DatabaseAnimationsStorage.get() || []
+    this.scenario = new Scenario(this, getCurrentMapUuid())
 
-    animationsToLoad.forEach(animationToLoad => {
-      this.loadingManager.loadFbx(animationToLoad.animationClipPath, (result) => {
-
-        // @ts-ignore
-        const payload = result?.animations?.[0]
-        payload.name = animationToLoad.name
-        this.animations.push(payload)
-        
-        if (!this.animationModelReference) {
-          this.animationModelReference = result
-        }
-
-        if (this.animations.length == animationsToLoad.length) {
-          // Has finished loading all animations, create the scenario
-
-          this.scenario = new Scenario(this, getCurrentMapUuid())
-
-          this.scenario.launch(this)
-        }
-      })
-
-    })
+    this.scenario.launch(this)
   }
 
   clearEntities = () => {

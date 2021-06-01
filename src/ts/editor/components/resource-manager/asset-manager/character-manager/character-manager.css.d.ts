@@ -1,5 +1,7 @@
 declare namespace CharacterManagerCssNamespace {
   export interface ICharacterManagerCss {
+    animationContainer: string;
+    animationContent: string;
     animationField: string;
     container: string;
   }

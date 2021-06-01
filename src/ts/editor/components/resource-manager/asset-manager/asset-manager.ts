@@ -1,6 +1,8 @@
 import shortid = require("shortid");
 import { IResource } from "src/ts/editor/interfaces/IResource";
+import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter";
 import { createElement } from "src/ts/editor/utils/ui"
+import { getResources } from "src/ts/storage/resources";
 import { ModalContext } from "../../modal-context"
 import { ModelViewer } from "../../model-viewer/model-viewer";
 import * as styles from './asset-manager.css'
@@ -14,12 +16,23 @@ export class AssetManager {
 
   modelViewer: ModelViewer
 
+  scale: number = 0.006
+
   public handleOnSave: (payload: IResource) => void
 
   open = () => {
     if (!this.assetUuid) {
       this.assetUuid = shortid.generate()
     }
+
+    const characters = getResources().characters
+    const target = characters.find(x => x.uuid == this.assetUuid) as IResourceCharacter
+    if (!target) {
+      this.scale = 0.006
+    } else {
+      this.scale = target.scale
+    }
+
 
     this.modalContext.open(this.getGui())
   }
@@ -38,7 +51,7 @@ export class AssetManager {
       const modelViewContainer = this.getModelViewerContainerGui()
       assetSettingsContainer.appendChild(modelViewContainer)
 
-      this.modelViewer = new ModelViewer(modelViewContainer, 300, 300)
+      this.modelViewer = new ModelViewer(modelViewContainer, 300, 300, this.scale)
       this.modelViewer.load(this.assetUrl, () => {
         this.renderAssetSettings(grid)
       })

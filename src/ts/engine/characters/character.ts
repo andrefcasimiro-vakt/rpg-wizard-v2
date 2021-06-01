@@ -14,9 +14,9 @@ import { GroundImpactData } from "./ground-impact-data";
 import * as CANNON from 'cannon'
 import { Idle } from "./character-states";
 import { IActor } from "src/ts/editor/interfaces/IActor";
-import { DatabaseAnimations } from "src/ts/editor/components/database/database-animations/database-animations";
-import { DatabaseAnimationsStorage } from "src/ts/storage";
-import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
+import { LoadingManager } from "../core/loading-manager";
+import { getResources } from "src/ts/storage/resources";
+import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter";
 
 const MOVE_SPEED = 4
 
@@ -32,7 +32,7 @@ export class Character extends Object3D implements IWorldEntity {
   public materials: Material[] = []
   public mixer: AnimationMixer
 
-  public animations: any[]
+  public animations: AnimationClip[] = []
 
   // Movement
   public acceleration = new Vector3()
@@ -72,19 +72,41 @@ export class Character extends Object3D implements IWorldEntity {
   public charState: ICharacterState
   public behavior: ICharacterAI
 
+  public loadingManager: LoadingManager 
+
   private physicsEnabled = true
 
   isControllable = true
-
+  
   constructor(model: Group, actor: IActor, world: World) {
     super()
 
     this.actor = actor
     this.world = world
 
-    this.readCharacterData(model)
+    this.loadingManager = new LoadingManager(this.world)
 
-    this.setAnimations(this.world.animations)
+    const actorResource = getResources().characters.find(x => x.uuid == this.actor.graphicUuid) as IResourceCharacter
+
+    const animationClips = actorResource?.animationClips || []
+    
+    animationClips.forEach((clip) => {
+      this.loadingManager.loadFbx(clip.animationClipPath, (result) => {
+        this.animations.push({
+          // @ts-ignore
+          ...result?.animations?.[0],
+          name: clip.name,
+        })
+
+        if (this.animations?.length >= animationClips.length) {
+          console.log(this.animations)
+          // States
+          this.setState(new Idle(this))
+        }
+      })
+    })
+
+    this.readCharacterData(model)
 
     // The visuals group is centered for easy character tilting
     this.tiltContainer = new Group()
@@ -156,14 +178,8 @@ export class Character extends Object3D implements IWorldEntity {
       this.physicsPostStep(body, this)
     }
 
-    // States
-    this.setState(new Idle(this))
   }
   
-  setAnimations = (animations: Group[]): void => {
-    this.animations = animations
-  }
-
   setArcadeVelocityInfluence = (x: number, y: number = x, z: number = x): void => {
     this.arcadeVelocityInfluence.set(x, y, z)
   }
@@ -372,7 +388,7 @@ export class Character extends Object3D implements IWorldEntity {
   setAnimation = (clipName: string, fadeIn: number): number => {
     if (this.mixer !== undefined && this.world != undefined) {
       // @ts-ignore
-      let clip = AnimationClip.findByName(this.world.animations || [], clipName)
+      let clip = AnimationClip.findByName(this.animations || [], clipName)
       let action =   this.mixer.clipAction(clip)
       if (action === null) {
         return 0

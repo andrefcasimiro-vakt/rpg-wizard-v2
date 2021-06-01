@@ -1,6 +1,6 @@
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { getSignedAngleBetweenVectors } from "../../utils/function-library";
-import { DropIdle, DropRolling, DropRunning, Falling, Sprint, StartWalk, StartWalkDirection, Walk } from ".";
+import { Falling, Sprint, Walk, Landing, Idle } from ".";
 import { Character } from "../character";
 
 export abstract class CharacterStateBase implements ICharacterState {
@@ -60,23 +60,7 @@ export abstract class CharacterStateBase implements ICharacterState {
   }
 
   public setAppropriateDropState() {
-    if (this.character.groundImpactData.velocity.y < -6) {
-      this.character.setState(new DropRolling(this.character))
-    } else if (this.anyDirection()) {
-      if (this.character.groundImpactData.velocity.y < -2) {
-      this.character.setState(new DropRunning(this.character))
-      } else {
-
-        if (this.character.actions.run.isPressed) {
-          this.character.setState(new Sprint(this.character))
-        } else {
-          this.character.setState(new Walk(this.character))
-        }
-
-      }
-    } else {
-     this.character.setState(new DropIdle(this.character))
-    }
+    this.character.setState(new Idle(this.character))
   }
 
   public setAppropriateStartWalkState(): void {

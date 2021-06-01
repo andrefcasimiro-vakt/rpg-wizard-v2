@@ -1,7 +1,6 @@
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { Character } from "../character";
 import { CharacterStateBase, JumpIdle, Walk } from ".";
-import { DatabaseAnimationsStorage } from "src/ts/storage";
 import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
 
 export class Idle extends CharacterStateBase implements ICharacterState

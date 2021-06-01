@@ -13,7 +13,6 @@ import { PlayIcon } from "../icons/play-icon";
 import { ResourceManager } from "./resource-manager/resource-manager";
 import { ResourceIcon } from "../icons/resource-icon";
 import { DatabaseActors } from "./database/database-actors/database-actors";
-import { DatabaseAnimations } from "./database/database-animations/database-animations";
 
 export class ToolbarEditor implements IEditor {
   
@@ -31,7 +30,6 @@ export class ToolbarEditor implements IEditor {
 
   // Database instances
   private databaseActors = new DatabaseActors()
-  private databaseAnimations = new DatabaseAnimations()
 
   private resourceManager = new ResourceManager()
 

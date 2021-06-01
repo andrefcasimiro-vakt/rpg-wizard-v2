@@ -15,15 +15,19 @@ export class ModelViewer {
   width: number
   height: number
 
+  modelScale: number
+
   loadingSpinner: HTMLElement
 
   controls: any
 
-  constructor(container, width, height) {
+  constructor(container, width, height, modelScale) {
     this.container = container
 
     this.width = width
     this.height = height
+
+    this.modelScale = modelScale
   }
 
   load = (assetPath: string, onModelLoadFinish?: () => void) => {
@@ -35,7 +39,6 @@ export class ModelViewer {
 
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color( 0xa0a0a0 );
-    // this.scene.fog = new THREE.Fog( 0xa0a0a0, 10, 50 );
 
     const hemiLight = new THREE.HemisphereLight( 0xffffff, 0x444444 );
     hemiLight.position.set( 0, 20, 0 );
@@ -65,44 +68,25 @@ export class ModelViewer {
     this.renderer.shadowMap.enabled = true;
 
     var loader
-    // if (assetPath.includes('.fbx')) {
-      loader = new FBXLoader()
-      loader.load(assetPath, (fbx: Object3D) => {
-        this.model = fbx
-        this.scene.add(fbx);
-  
-        fbx.traverse((object: any) => {
-          if (object.isMesh) object.castShadow = true;
-        })
+    loader = new FBXLoader()
+    loader.load(assetPath, (fbx: Object3D) => {
+      fbx.scale.setScalar(this.modelScale)
 
-        if (onModelLoadFinish) {
-          onModelLoadFinish()
-        }
+      this.model = fbx
+      this.scene.add(fbx);
 
-        this.container.removeChild(this.loadingSpinner)
-        this.container.appendChild(this.renderer.domElement);
-        this.animate()
+      fbx.traverse((object: any) => {
+        if (object.isMesh) object.castShadow = true;
       })
-    // }
-    // else {
-    //   loader = new GLTFLoader()
-    //   loader.load(assetPath, (gltf) => {
-    //     this.model = gltf.scene;
-    //     this.scene.add(this.model);
-  
-    //     this.model.traverse((object: any) => {
-    //       if (object.isMesh) object.castShadow = true;
-    //     })
 
-    //     if (onModelLoadFinish) {
-    //       onModelLoadFinish()
-    //     }
+      if (onModelLoadFinish) {
+        onModelLoadFinish()
+      }
 
-    //     this.container.innerHTML = ''
-    //     this.container.appendChild(this.renderer.domElement);
-    //     this.animate()
-    //   })
-    // }
+      this.container.removeChild(this.loadingSpinner)
+      this.container.appendChild(this.renderer.domElement);
+      this.animate()
+    })
 
     // camera
     this.camera = new THREE.PerspectiveCamera( 45, this.width / this.height, 1, 5000 );

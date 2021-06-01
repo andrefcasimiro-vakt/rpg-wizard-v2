@@ -1,5 +1,5 @@
 import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
-import { CharacterStateBase, Idle, StartWalk, StartWalkDirection } from ".";
+import { CharacterStateBase, Idle } from ".";
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { Character } from "../character";
 
@@ -26,7 +26,7 @@ export class Falling extends CharacterStateBase implements ICharacterState {
 
 		if (this.character.rayWasHit)
 		{
-			this.setAppropriateDropState();
+			this.character.setState(new Idle(this.character))
 		}
 	}
 }

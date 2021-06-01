@@ -1,4 +1,5 @@
-import { CharacterStateBase, Falling, Idle, StartWalk, StartWalkDirection } from ".";
+import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
+import { CharacterStateBase, Falling, } from ".";
 import { ICharacterState } from "../../interfaces/ICharacterState";
 import { Character } from "../character";
 
@@ -12,7 +13,7 @@ export class JumpIdle extends CharacterStateBase implements ICharacterState {
 		this.character.velocitySimulator.mass = 50;
 
 		this.character.setArcadeVelocityTarget(0);
-		this.playAnimation('jump_idle', 0.1);
+		this.playAnimation(DefaultAnimations.JumpIdle, 0.1);
 		this.alreadyJumped = false;
 	}
 
@@ -46,7 +47,7 @@ export class JumpIdle extends CharacterStateBase implements ICharacterState {
 			}
 			
 		}
-		else if (this.timer > 0.3 && this.character.rayWasHit)
+		else if (this.timer > 0.25 && this.character.rayWasHit)
 		{
 			this.setAppropriateDropState();
 		}

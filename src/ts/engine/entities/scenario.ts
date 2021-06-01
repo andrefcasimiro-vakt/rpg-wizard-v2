@@ -136,7 +136,7 @@ export class Scenario {
     const actorGraphic = getResources()?.characters?.find(x => x.uuid == actor.graphicUuid) as IResourceCharacter
 
     this.loadingManager.loadFbx(actorGraphic.downloadUrl, (model: Group) => {
-      model.scale.set(Number(actorGraphic.scale), Number(actorGraphic.scale), Number(actorGraphic.scale))
+      model.scale.setScalar(actorGraphic.scale)
 
       let player = new Character(model, actor, this.world)
 
