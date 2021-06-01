@@ -22,7 +22,7 @@ export class ConditionPanel {
     const switchPanel = createElement('div', styles.switchPanel)
     container.appendChild(switchPanel)
 
-    const switchHeaderText = document.createElement('p')
+    const switchHeaderText = document.createElement('h4')
     switchHeaderText.innerHTML = 'Conditions'
     switchPanel.appendChild(switchHeaderText)
 

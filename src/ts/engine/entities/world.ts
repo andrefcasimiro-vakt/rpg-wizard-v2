@@ -167,6 +167,10 @@ export class World {
   }
 
   remove = (worldEntity: IWorldEntity) => {
+    if (!worldEntity) {
+      return
+    }
+
     worldEntity.removeFromWorld(this)
     this.unregisterUpdatable(worldEntity)
   }

@@ -1,0 +1,16 @@
+:local .panel {
+  display: flex;
+  flex-direction: column;
+  margin-top: 5px;
+}
+
+:local .field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+:local .field button {
+  max-height: 30px;
+}
+

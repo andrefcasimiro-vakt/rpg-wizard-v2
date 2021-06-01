@@ -15,6 +15,8 @@ import { DatabaseActorsStorage } from "src/ts/storage"
 import { getResources } from "src/ts/storage/resources"
 import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter"
 import { SkeletonUtils } from "three/examples/jsm/utils/SkeletonUtils"
+import { IActor } from "src/ts/editor/interfaces/IActor"
+import { EntityType } from "../interfaces/IWorldEntity"
 
 
 var light = new PointLight(0xffffff)
@@ -132,13 +134,14 @@ export class Scenario {
   }
 
   spawnPlayer = (initialPosition: Vector3) => {
-    const actor = DatabaseActorsStorage.get()?.[0]
+    const actor = DatabaseActorsStorage.get()?.[0] as IActor
     const actorGraphic = getResources()?.characters?.find(x => x.uuid == actor.graphicUuid) as IResourceCharacter
 
     this.loadingManager.loadFbx(actorGraphic.downloadUrl, (model: Group) => {
       model.scale.setScalar(actorGraphic.scale)
 
-      let player = new Character(model, actor, this.world)
+      let player = new Character(model, actorGraphic.animationClips, this.world)
+      player.entityType = EntityType.PLAYER
 
       player.setPosition(initialPosition.x, initialPosition.y, initialPosition.z)
 

@@ -21,6 +21,7 @@ export class InputManager implements IUpdatable {
   public boundOnKeyDown: (evt: KeyboardEvent) => void;
   public boundOnKeyUp: (evt: KeyboardEvent) => void;
 
+  keyPressed: KeyboardEvent
 
   constructor(world: World, domElement: HTMLElement) {
     this.world = world
@@ -120,12 +121,16 @@ export class InputManager implements IUpdatable {
     if (this.inputReceiver) {
       this.inputReceiver.handleKeyboardEvent(event, event.code, true)
     }
+
+    this.keyPressed = event
   }
 
   onKeyUp = (event: KeyboardEvent) => {
     if (this.inputReceiver) {
       this.inputReceiver.handleKeyboardEvent(event, event.code, false)
     }
+
+    this.keyPressed = null
   }
 
   onMouseWheelMove = (event: WheelEvent) => {

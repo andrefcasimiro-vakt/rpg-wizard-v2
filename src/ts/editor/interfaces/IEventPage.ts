@@ -10,4 +10,6 @@ export interface IEventPage {
   actions: IEventAction[];
 
   trigger: EventTrigger;
+
+  graphicUuid: string | null;
 }

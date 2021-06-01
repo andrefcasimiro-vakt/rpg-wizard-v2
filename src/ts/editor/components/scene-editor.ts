@@ -9,6 +9,7 @@ import { IMapGround } from "../interfaces/IMapGround";
 import { getCurrentMap, getCurrentMapUuid } from "../../storage/maps";
 import { addOrUpdateEvent } from "../../storage/events";
 import shortid = require("shortid");
+import { EventTrigger } from "../enums/EventTrigger";
 
 // Cache
 var skyboxGeometry = new BoxGeometry(1000, 1000, 1000)
@@ -229,7 +230,7 @@ export class SceneEditor {
                 uuid: shortid.generate(),
                 switches: [],
                 actions: [],
-                trigger: null,
+                trigger: EventTrigger.ON_ACTION_KEY_DOWN,
               }]
             })
           }  

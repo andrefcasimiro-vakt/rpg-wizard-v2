@@ -13,17 +13,15 @@ import { applyVectorMatrixXZ, cannonVector, getForward, getSignedAngleBetweenVec
 import { GroundImpactData } from "./ground-impact-data";
 import * as CANNON from 'cannon'
 import { Idle } from "./character-states";
-import { IActor } from "src/ts/editor/interfaces/IActor";
 import { LoadingManager } from "../core/loading-manager";
 import { getResources } from "src/ts/storage/resources";
 import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter";
+import { IAnimationClip } from "src/ts/editor/interfaces/IAnimationClip";
 
 const MOVE_SPEED = 4
 
 export class Character extends Object3D implements IWorldEntity {
-  actor: IActor
-
-  public entityType = EntityType.PLAYER
+  public entityType = EntityType.NPC
   public updateOrder = 1
 
   public height = 0
@@ -78,17 +76,12 @@ export class Character extends Object3D implements IWorldEntity {
 
   isControllable = true
   
-  constructor(model: Group, actor: IActor, world: World) {
+  constructor(model: Group, animationClips: IAnimationClip[] = [], world: World) {
     super()
 
-    this.actor = actor
     this.world = world
 
     this.loadingManager = new LoadingManager(this.world)
-
-    const actorResource = getResources().characters.find(x => x.uuid == this.actor.graphicUuid) as IResourceCharacter
-
-    const animationClips = actorResource?.animationClips || []
     
     animationClips.forEach((clip) => {
       this.loadingManager.loadFbx(clip.animationClipPath, (result) => {
@@ -99,7 +92,6 @@ export class Character extends Object3D implements IWorldEntity {
         })
 
         if (this.animations?.length >= animationClips.length) {
-          console.log(this.animations)
           // States
           this.setState(new Idle(this))
         }
@@ -638,7 +630,7 @@ export class Character extends Object3D implements IWorldEntity {
   }
 
   removeFromWorld = (world: World): void => {
-    if (_.includes(world.characters, this)) {
+    if (world.characters.findIndex(x => x.uuid == this.uuid) == -1) {
       console.warn('Removing character to a world in which it isn\'t present')
       return
     }

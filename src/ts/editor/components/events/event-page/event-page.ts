@@ -3,6 +3,7 @@ import { getEventActionInstance } from "src/ts/editor/utils/event-actions"
 import { getCurrentEventPageUuid } from "src/ts/storage/events"
 import { ConditionPanel } from "../condition-panel/condition-panel"
 import { EventEditor } from "../event-editor"
+import { GraphicPanel } from "../graphic-panel/graphic-panel"
 import { TriggerPanel } from "../trigger-panel/trigger-panel"
 
 export class EventPage {
@@ -36,6 +37,8 @@ export class EventPage {
 
     // Trigger Panel
     new TriggerPanel(page, this.eventEditor).initialize(sidebarPanel)
+
+    new GraphicPanel(this.eventEditor).initialize(sidebarPanel)
 
     const actionsPanel = document.createElement('div')
     actionsPanel.style.display = 'flex'
