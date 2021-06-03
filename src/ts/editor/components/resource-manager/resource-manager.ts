@@ -147,7 +147,7 @@ export class ResourceManager {
 
   addAsset = () => {
     const Manager = assetManagers[this.selectedResourceFolder] as typeof AssetManager
-    const instance = new Manager()
+    const instance = new Manager(this.selectedResourceFolder)
     
     instance.handleOnSave = (payload: IResource) => {
       this.handleChangesToResource(payload, 'add', instance)
@@ -158,7 +158,7 @@ export class ResourceManager {
 
   updateAsset = () => {
     const Manager = assetManagers[this.selectedResourceFolder] as typeof AssetManager
-    const instance = new Manager()
+    const instance = new Manager(this.selectedResourceFolder)
     
     instance.handleOnSave = (payload: IResource) => {
       this.handleChangesToResource(payload, 'update', instance)

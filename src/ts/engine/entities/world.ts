@@ -6,12 +6,12 @@ import { IWorldEntity } from "../interfaces/IWorldEntity";
 import _ = require("lodash");
 import { InputManager } from "../core/input-manager";
 import { CameraOperator } from "../core/camera-operator";
-import { getCurrentMapUuid } from "../../storage/maps";
 import { Character } from "../characters/character";
 import { Scenario } from "./scenario";
 import { CannonDebugRenderer } from '../../../lib/cannon/CannonDebugRenderer'
 import { GameState } from "./game-state";
 import { LoadingManager } from "../core/loading-manager";
+import { MapStorage } from "src/ts/storage";
 
 const MOUSE_SENSITIVITY = 0.3
 
@@ -180,7 +180,7 @@ export class World {
   }
 
   loadScene = (sceneUuid: string) => {
-    this.scenario = new Scenario(this, getCurrentMapUuid())
+    this.scenario = new Scenario(this, MapStorage.getCurrentMap().uuid)
 
     this.scenario.launch(this)
   }

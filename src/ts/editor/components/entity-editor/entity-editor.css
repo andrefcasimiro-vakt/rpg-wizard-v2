@@ -1,0 +1,59 @@
+:local .container {
+
+}
+
+
+:local .guiHeaderText {
+  color: var(--dark)
+}
+
+:local .header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+:local .addButton {
+
+}
+
+:local .panel {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+:local .entitiesList {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+:local .entityBtn {
+  display: flex;
+  width: 60px;
+  height: 60px;
+  margin: 1px;
+  border: 0px;
+  opacity: 0.3;
+  transition: .2s ease all;
+
+  color: var(--light);
+  font-size: 9px;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+
+  border: 2px solid var(--neutral);
+}
+
+:local .entityBtn:hover {
+  opacity: 0.5;
+}
+
+:local .entityBtnActive {
+  opacity: 1;
+  border: 2px solid var(--primaryDark);
+}
+
+:local .entityBtnActive:hover {
+  opacity: 1;
+}

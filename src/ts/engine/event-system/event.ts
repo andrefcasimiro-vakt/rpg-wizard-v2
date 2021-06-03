@@ -1,3 +1,4 @@
+import shortid = require("shortid");
 import { EventTrigger } from "src/ts/editor/enums/EventTrigger";
 import { IEvent } from "src/ts/editor/interfaces/IEvent";
 import { IEventPage } from "src/ts/editor/interfaces/IEventPage";
@@ -10,13 +11,15 @@ import { Group } from "three/src/objects/Group";
 import { Character } from "../characters/character";
 import { LoadingManager } from "../core/loading-manager";
 import { World } from "../entities/world";
+import { IGameStateSubscriber } from "../interfaces/IGameStateSubscriber";
 import { IUpdatable } from "../interfaces/IUpdatable";
 import { EntityType } from "../interfaces/IWorldEntity";
 
-export class Event implements IUpdatable {
+export class Event implements IUpdatable, IGameStateSubscriber {
+  subscriptionUuid = shortid.generate()
+
   updateOrder = 1;
   
-  // Event
   event: IEvent
 
   eventPosition: Vector3
@@ -32,6 +35,7 @@ export class Event implements IUpdatable {
   activePage: IEventPage
   
   pageCharacter: Character
+
   lastActiveCharacterGraphicUuid: string
 
   constructor(world: World, eventPositon: Vector3, eventUuid: string) {
@@ -107,7 +111,7 @@ export class Event implements IUpdatable {
   }
 
   update = () => {
-    // Dont handle any logic if automatic or paralell processing since this is done on the setup
+    // Dont handle any logic if automatic or parallel processing since this is done on the setup
     if (this.activePage.trigger  == EventTrigger.AUTOMATIC || this.activePage.trigger  == EventTrigger.PARALLEL_PROCESS) {
       return
     }
@@ -152,9 +156,13 @@ export class Event implements IUpdatable {
       await promise()
     }
 
-    // Repeat if paralell process
+    // Repeat if parallel process
     if (this.activePage.trigger  == EventTrigger.PARALLEL_PROCESS) {
       this.dispatch()
     }
+  }
+
+  onGameStateUpdate = () => {
+    this.setupEvent()
   }
 }

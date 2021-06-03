@@ -1,0 +1,20 @@
+:local .nav {
+  position: absolute;
+  top: 0;
+  height: 50px;
+  display: flex;
+  width: 100%;
+}
+
+:local .sidebar {
+  background: var(--neutral);
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  padding: 0px 5px;
+  height: calc(100% - 50px);
+  border-right: 1px solid var(--primaryDark);
+  overflow: scroll;
+  top: 51px;
+}

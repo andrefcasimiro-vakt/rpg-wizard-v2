@@ -31,9 +31,9 @@ export class StorageHandler<T extends Base> {
     nextState[idx] = payload
     this.set(nextState)
   }
-
+  
   remove = (uuid: string) => {
-    const nextState = this.get().filter(x => x.uuid != uuid)
+    const nextState = this.get()?.filter(x => x.uuid != uuid)
     this.set(nextState)
   }
 }

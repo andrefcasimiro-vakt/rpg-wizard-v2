@@ -1,14 +1,20 @@
-import { Material, Vector3 } from "three";
-import { IMapLayer } from "./IMapLayer";
+import { Vector3 } from "three";
+import { IMapEvent } from "./IMapEvent";
+import { IMapGround } from "./IMapGround";
+import { IMapSettings } from "./IMapSettings";
 
 export interface IMap {
   uuid: string;
 
   name: string;
 
-  layers: IMapLayer[];
+  grounds: IMapGround[];
 
-  /** Is the map a child of another map? */
+  events: IMapEvent[];
+
+  startingPosition?: Vector3;
+
   parentUuid?: string;
-}
 
+  settings: IMapSettings | null
+}

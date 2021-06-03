@@ -20,19 +20,25 @@ export class AssetManager {
 
   public handleOnSave: (payload: IResource) => void
 
+  resourceType: string 
+
+  constructor(resourceType: string) {
+    this.resourceType = resourceType
+  }
+
   open = () => {
     if (!this.assetUuid) {
       this.assetUuid = shortid.generate()
     }
 
-    const characters = getResources().characters
-    const target = characters.find(x => x.uuid == this.assetUuid) as IResourceCharacter
+    // Character case
+    const characters = getResources()?.characters
+    const target = characters?.find(x => x.uuid == this.assetUuid) as IResourceCharacter
     if (!target) {
       this.scale = 0.006
     } else {
       this.scale = target.scale
     }
-
 
     this.modalContext.open(this.getGui())
   }
@@ -47,7 +53,7 @@ export class AssetManager {
     grid.appendChild(assetSettingsContainer)
     assetSettingsContainer.appendChild(this.getAssetConfigurationGui())
 
-    if (this.assetUrl) {
+    if (this.assetUrl && this.resourceType == 'characters') {
       const modelViewContainer = this.getModelViewerContainerGui()
       assetSettingsContainer.appendChild(modelViewContainer)
 
@@ -55,6 +61,15 @@ export class AssetManager {
       this.modelViewer.load(this.assetUrl, () => {
         this.renderAssetSettings(grid)
       })
+    }
+
+    console.log(this.resourceType)
+
+    if (this.assetUrl && this.resourceType == 'textures') {
+      const imagePreview = createElement('img', styles.textureImage) as HTMLImageElement
+      assetSettingsContainer.appendChild(imagePreview)
+
+      imagePreview.src = this.assetUrl
     }
 
     return container
@@ -91,7 +106,7 @@ export class AssetManager {
   getAssetConfigurationGui = (): HTMLElement => {
     const assetConfigurationContent = createElement('div', styles.assetConfigurationContent)
     
-    assetConfigurationContent.appendChild(this.getHeader('Add asset'))
+    // assetConfigurationContent.appendChild(this.getHeader('Asset Information'))
 
     this.renderInput(
       assetConfigurationContent,

@@ -14,7 +14,6 @@ export class TriggerPanel {
   }
 
   initialize = (container: HTMLElement) => {
-    // Switches
     const panel = document.createElement('div')
     panel.className = styles['panel']
     container.appendChild(panel)

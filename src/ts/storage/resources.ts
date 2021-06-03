@@ -6,7 +6,7 @@ import { IResourceCharacter } from "../editor/interfaces/IResourceCharacter"
 export const RESOURCES_KEY = `resources`
 
 export interface Resources {
-  characters: IResource[]
+  characters: IResourceCharacter[]
   props: IResource[]
   textures: IResource[]
   fx: IResource[]
@@ -19,6 +19,7 @@ export type ResourceKey = keyof Resources
 export const addResource = (resource: IResource, key: ResourceKey): void => {
   const payload = getResources()
 
+  // @ts-ignore
   payload[key].push(resource)
 
   setResources(payload)

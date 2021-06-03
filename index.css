@@ -15,6 +15,9 @@
 
   --dark: #000;
   --light: #FFF;
+
+  --zIndexModal: 999;
+  --zIndexContextMenu: 999;
 }
 
 html {

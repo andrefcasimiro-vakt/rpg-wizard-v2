@@ -73,6 +73,7 @@ export class PageToolbar {
       switches: [],
       actions: [],
       trigger: null,
+      graphicUuid: '',
     })
 
     addOrUpdateEvent(event)

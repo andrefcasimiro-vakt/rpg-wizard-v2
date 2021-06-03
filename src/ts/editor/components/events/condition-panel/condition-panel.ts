@@ -18,7 +18,6 @@ export class ConditionPanel {
   }
 
   initialize = (container: HTMLElement) => {    
-    // Switches
     const switchPanel = createElement('div', styles.switchPanel)
     container.appendChild(switchPanel)
 

@@ -1,0 +1,31 @@
+:local .list {
+  display: flex;
+  position: absolute;
+  flex-direction: column;
+  background-color: var(--primaryLight);
+  z-index: var(--zIndexContextMenu);
+
+  padding: 0px 2px;
+  box-shadow: 1px 5px 10px rgba(0, 0, 0, 0.5);
+
+  border-radius: 2px;
+  min-width: 200px;
+}
+
+:local .item {
+  display: flex;
+  width: 100%;
+}
+
+:local .button {
+  width: 100%;
+  border: none;
+  border-left: 1px solid var(--primaryDark);
+  padding: 10px;
+  display: flex;
+  align-self: flex-start;
+}
+
+:local .button:hover {
+  background: var(--primary);
+}

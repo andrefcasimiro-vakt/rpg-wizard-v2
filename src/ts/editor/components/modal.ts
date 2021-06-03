@@ -1,12 +1,19 @@
 import shortid = require("shortid");
 import { Theme, ZIndices } from "../config/theme"
+import { ContextMenu } from "./context-menu/context-menu";
 
 export class Modal {
 
   public static initialize = () => {
+
+    // TODO: Move this code to a generic handler
     window.onclick = (event) => {
       if (event.target.id == 'modal') {
         Modal.close()
+      }
+
+      if (event.target.id != 'context-menu') {
+        ContextMenu.close()
       }
     }
 
