@@ -1,6 +1,7 @@
 import { Vector3 } from "three"
 import { StorageHandler } from "."
 import { IMap } from "../editor/interfaces/IMap"
+import { getEvents, setEvents } from "./events"
 
 export const MAP_LIST_STORAGE_KEY = `maps`
 
@@ -26,13 +27,13 @@ class MapStorageHandler extends StorageHandler<IMap> {
   remove = (mapUuid: string) => {
     const maps = this.get() || []
 
-    const nextState = maps.filter(x => {
+    const nextState = maps.filter(map => {
+      if (map.parentUuid == mapUuid || map.uuid == mapUuid) {
+        // Events from the map to be removed
+        const eventUuids = map.events.map(x => x.eventUuid)
+        const updatedEvents = getEvents()?.filter(x => !eventUuids.includes(x.uuid))
+        setEvents(updatedEvents)
 
-      if (x.parentUuid == mapUuid) {
-        return false
-      }
-
-      if (x.uuid == mapUuid) {
         return false
       }
 
@@ -64,8 +65,6 @@ class MapStorageHandler extends StorageHandler<IMap> {
 }
 
 export const MapStorage = new MapStorageHandler()
-
-
 
 export const CURRENT_MAP_UUID_STORAGE_KEY = `currentMapUuid`
 

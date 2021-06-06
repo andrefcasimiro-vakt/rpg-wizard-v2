@@ -1,21 +1,32 @@
 import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
 import { IAnimationClip } from "src/ts/editor/interfaces/IAnimationClip";
-import { IResource } from "src/ts/editor/interfaces/IResource";
 import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter";
 import { createElement } from "src/ts/editor/utils/ui";
 import { getResources } from "src/ts/storage/resources";
+import { ModelViewer } from "../../../model-viewer/model-viewer";
 import { AssetManager } from "../asset-manager";
 import * as styles from './character-manager.css'
 
 export class CharacterManager extends AssetManager {
 
   animationClips: IAnimationClip[] = []
+  scale: number = 0.006
+
+  setupAsset = () => {
+    const characters = getResources()?.characters
+    const target = characters?.find(x => x.uuid == this.assetUuid) as IResourceCharacter
+  
+    this.scale = target ? target.scale : 0.006
+  }
 
   getAssetGui = () => {
     const container = createElement('div', styles.container)
     
     const character = getResources()?.characters?.find(x => x.uuid == this.assetUuid) as IResourceCharacter
     this.animationClips = character?.animationClips || []
+
+    // Render model preview
+    this.renderModelPreview(container)
 
     // Model Scale
     this.renderScaleInput(container)
@@ -24,6 +35,21 @@ export class CharacterManager extends AssetManager {
     this.renderAnimationFields(container)
 
     return container
+  }
+
+  renderModelPreview = (container) => {
+      const modelViewContainer = this.getModelViewerContainerGui()
+      container.appendChild(modelViewContainer)
+
+      this.modelViewer = new ModelViewer(modelViewContainer, 300, 300, this.scale)
+      this.modelViewer.load(this.assetUrl, () => {
+
+      })
+  }
+
+  getModelViewerContainerGui = (): HTMLElement => {
+    const modelViewerContainer = createElement('div', styles.modelViewerContainer)
+    return modelViewerContainer
   }
 
   renderScaleInput = (container) => {

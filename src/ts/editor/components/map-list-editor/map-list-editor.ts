@@ -152,6 +152,8 @@ export class MapListEditor {
   removeMap = (mapUuid: string) => {
     MapStorage.remove(mapUuid)
 
+    
+
     this.refresh()
   }
 

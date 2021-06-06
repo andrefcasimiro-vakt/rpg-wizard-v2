@@ -2,6 +2,7 @@ import { xor } from "lodash";
 import _ = require("lodash");
 import shortid = require("shortid");
 import { EntitiesStorage, MapStorage } from "src/ts/storage";
+import { getEvents, setEvents } from "src/ts/storage/events";
 import { BoxGeometry, Intersection, Mesh, MeshBasicMaterial, RepeatWrapping, Scene, Texture, TextureLoader, Vector3 } from "three";
 import { Editor } from "../../editor";
 import { EventTrigger } from "../../enums/EventTrigger";
@@ -18,12 +19,12 @@ import { SceneRenderer } from "../scene-renderer/scene-renderer";
 import { ToolbarEditor } from "../toolbar-editor";
 
 const PLACEHOLDER_TILE_NAME = 'PLACEHOLDER_TILE_NAME'
-
 export class MapEditor extends SceneRenderer {
 
   groundMesh: Mesh
   squareT: Texture;
   basePlane: Mesh;
+  basePlaneTransparent: Mesh;
   
   brush: Mesh
 
@@ -38,6 +39,8 @@ export class MapEditor extends SceneRenderer {
   currentLayer = 0
 
   entityTextureBank: { [entityUuid: string]: Texture } = {}
+
+  showGrid = true
 
   constructor(editor: Editor) {
     super({ ambientLightColor: '#FFF', skyboxColor: '#FFF' })
@@ -76,9 +79,13 @@ export class MapEditor extends SceneRenderer {
     this.squareT.repeat.set(1, 1)
 
     var planeGeo = new BoxGeometry(1, 1, 1)
+    planeGeo.scale(1, 1, 1)
     var planeMat = new MeshBasicMaterial({ transparent: true, map: this.squareT, color: 0xbbbbbb, opacity: 0.009 })
     this.basePlane = new Mesh(planeGeo, planeMat)
     this.basePlane.rotation.x = -Math.PI / 2
+
+    this.basePlaneTransparent = this.basePlane.clone()
+    this.basePlaneTransparent.material = new MeshBasicMaterial({ transparent: true, opacity: 0 })
   }
 
   loadTextures = () => {
@@ -101,6 +108,12 @@ export class MapEditor extends SceneRenderer {
     this.handleRaycast()
   }
 
+  public onDoubleClick(event: MouseEvent) {
+    super.onDoubleClick(event)
+
+    this.handleRaycast({ doubleClicked: true })
+  }
+
   handleRaycast = (options?: {
     doubleClicked?: boolean,
   }) => {
@@ -109,7 +122,10 @@ export class MapEditor extends SceneRenderer {
     }
 
     this.raycaster.setFromCamera(this.mouse, this.camera)
-    const intersectionObjects = this.scene.children.filter(x => x.name == PLACEHOLDER_TILE_NAME)
+    
+    const intersectionObjects = this.scene.children.filter(x =>
+        x.name == PLACEHOLDER_TILE_NAME
+    )
 
     const intersections = this
       .raycaster
@@ -125,12 +141,6 @@ export class MapEditor extends SceneRenderer {
     }
   }
 
-  onDoubleClick = (event: MouseEvent) => {
-    super.onDoubleClick(event)
-
-    this.handleRaycast({ doubleClicked: true })
-  }
-
   canCastRaycast = (): boolean => {
     const modal = document.getElementById('modal')
     return modal.style.display == 'none'
@@ -140,8 +150,13 @@ export class MapEditor extends SceneRenderer {
     var intersectionPosition = intersection.point.round()
 
     const targetEvent = MapStorage.getCurrentMap().events.find(evt => {
+      const x = intersectionPosition.x
+      const y = intersectionPosition.y - 1
+      const z = intersectionPosition.z
       const pos = new Vector3(evt.position.x, evt.position.y, evt.position.z).round()
-      return pos.equals(intersectionPosition)
+      console.log('pos: ', pos)
+
+      return pos.x == x && pos.y == y && pos.z == z
     })
 
     if (targetEvent) {
@@ -156,13 +171,14 @@ export class MapEditor extends SceneRenderer {
     const ground = this.entityTextureBank?.[currentEntityUuid]
     ground.wrapS = RepeatWrapping
     ground.repeat.set(1, 1)
+
     if (this.toolbarEditor.mode === ToolbarMode.EVENT) {
       this.brush.material = new MeshBasicMaterial({ color: 'purple' })
-    } else if (ground) {
-      this.brush.material = new MeshBasicMaterial({ map: ground })
     } else if (this.toolbarEditor.mode == ToolbarMode.STARTING_POSITION) {
       this.brush.material = new MeshBasicMaterial({ color: 'yellow' })
-    }
+    } else if (ground) {
+      this.brush.material = new MeshBasicMaterial({ map: ground })
+    } 
 
     var nextPosition = intersectionPosition.clone()
     nextPosition.y = this.currentLayer
@@ -183,6 +199,17 @@ export class MapEditor extends SceneRenderer {
     // Fill Mode
     if (this.toolbarEditor.mode === ToolbarMode.FILL) {      
       return;
+    }
+
+    // Erase Mode
+    if (this.editor.isDeleting) {
+      if (this.toolbarEditor.mode == ToolbarMode.EVENT) {
+        this.removeEvent(nextPosition)
+      }
+
+      if (this.toolbarEditor.mode == ToolbarMode.DRAW) {
+        this.removeGround(nextPosition)
+      }
     }
 
     // Paint Mode
@@ -217,13 +244,25 @@ export class MapEditor extends SceneRenderer {
 
   paintEvent = (nextPosition: Vector3) => {
     const events = this.currentMap.events || []
+
+    // Don't paint over an existing event
+    if (events.find(evt =>
+        evt.position.x == nextPosition.x
+        && evt.position.y == nextPosition.y
+        && evt.position.z == nextPosition.z
+      )) {
+        return
+      }
+
+    const eventUuid = shortid.generate()
+
     const idx = events.findIndex(evt =>
         evt.position.x == nextPosition.x
         && evt.position.y == nextPosition.y
         && evt.position.z == nextPosition.z)
 
         const payload: IMapEvent = {
-      eventUuid: shortid.generate(),
+      eventUuid,
       position: nextPosition,
     }
 
@@ -236,6 +275,71 @@ export class MapEditor extends SceneRenderer {
     MapStorage.update({
       ...this.currentMap,
       events,
+    })
+
+    // Save event to event storage
+    const nextState = getEvents() || []
+    nextState.push({
+      uuid: eventUuid,
+      eventPages: [{
+        uuid: shortid.generate(),
+        switches: [],
+        actions: [],
+        graphicUuid: '',
+        trigger: EventTrigger.ON_ACTION_KEY_DOWN,
+      }]
+    })
+    setEvents(nextState)
+
+    this.renderScene()
+  }
+
+  removeEvent = (position: Vector3) => {
+    const events = this.currentMap.events || []
+
+    const idx = events.findIndex(evt =>
+      evt.position.x == position.x
+      && evt.position.y == position.y
+      && evt.position.z == position.z
+    )
+    
+    if (idx == -1) {
+      return
+    }
+
+    const storageEvents = getEvents() || []
+    console.log(events[idx])
+    const nextState = storageEvents.filter(x => x.uuid != events[idx].eventUuid)
+    setEvents(nextState)
+
+    _.pull(events, events[idx])
+
+    MapStorage.update({
+      ...this.currentMap,
+      events,
+    })
+
+    this.renderScene()
+  }
+
+  removeGround = (position: Vector3) => {
+    const grounds = this.currentMap.grounds || []
+
+    const idx = grounds.findIndex(evt =>
+      evt.position.x == position.x
+      && evt.position.y == position.y
+      && evt.position.z == position.z
+    )
+    
+    if (idx == -1) {
+      return
+    }
+
+    _.pull(grounds, grounds[idx])
+
+    MapStorage.update({
+      ...this.currentMap,
+      grounds,
     })
 
     this.renderScene()
@@ -262,6 +366,8 @@ export class MapEditor extends SceneRenderer {
     const mapHeight = 10
     const currentMapGrounds = this.currentMap.grounds
 
+    const groundMaterial = new MeshBasicMaterial()
+
     for (let i = -mapWidth / 2; i < mapWidth / 2; i++) {
       for (let j = -mapDepth / 2; j < mapDepth / 2; j++) {
         for (let h = -mapHeight / 2; h < mapHeight / 2; h++) {
@@ -277,13 +383,16 @@ export class MapEditor extends SceneRenderer {
             const ground = this.entityTextureBank?.[existingGround?.entityUuid]
             ground.wrapS = RepeatWrapping
             ground.repeat.set(1, 1)
-            entry.material = new MeshBasicMaterial({ map: ground })
+            entry.material = groundMaterial.clone()
+            // @ts-ignore
+            entry.material.map = ground
 
             this.scene.add(entry)
             continue
           }
 
-          var placeholderTile = this.basePlane.clone()
+          var placeholderTile = this.showGrid ? this.basePlane.clone() : this.basePlaneTransparent.clone()
+
           placeholderTile.position.set(i, this.currentLayer, j)
           placeholderTile.name = PLACEHOLDER_TILE_NAME
           this.scene.add(placeholderTile)
@@ -297,7 +406,10 @@ export class MapEditor extends SceneRenderer {
 
     currentMapEvents.forEach(mapEvent => {
       var entry = this.groundMesh.clone()
-      entry.position.set(mapEvent.position.x, mapEvent.position.y, mapEvent.position.z)
+      const position = new Vector3(mapEvent.position.x, mapEvent.position.y, mapEvent.position.z)
+      entry.position.set(position.x, position.y + .1, position.z)
+      entry.scale.setScalar(.9)
+      entry.name = PLACEHOLDER_TILE_NAME
       entry.material = new MeshBasicMaterial({ color: 'purple', opacity: 0.9, transparent: true })
       this.scene.add(entry)
     })
@@ -350,6 +462,12 @@ export class MapEditor extends SceneRenderer {
 
       this.renderScene()
     }
+
+    if (evt.code == 'KeyH') {
+      this.showGrid = !this.showGrid
+      this.renderScene()
+    }
+    
   }
 
 }

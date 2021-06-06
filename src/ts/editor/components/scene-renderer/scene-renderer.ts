@@ -102,7 +102,6 @@ export class SceneRenderer {
   }
 
   public onDoubleClick(event: MouseEvent) {
-    console.log(event)
     this.mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
     this.mouse.y = -(event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
   }

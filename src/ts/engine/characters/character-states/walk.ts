@@ -6,7 +6,7 @@ export class Walk extends CharacterStateBase {
   constructor(character: Character) {
     super(character)
 
-    this.character.setArcadeVelocityTarget(0.8)
+    this.character.setArcadeVelocityTarget(0.5)
     this.playAnimation(DefaultAnimations.Walk, 0.1)
   }
 

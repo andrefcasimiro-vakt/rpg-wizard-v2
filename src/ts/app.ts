@@ -6,11 +6,12 @@ import { initializeStore } from "./storage/utils";
 export class App {
 
   constructor() {
-    if (window.location.search.includes('?mode=game')) {
+    const isInGame = window.location.search.includes('?mode=game')
+
+    if (isInGame) {
       new World()
     } else {
       initializeStore()
-
       new Editor();
     }
 

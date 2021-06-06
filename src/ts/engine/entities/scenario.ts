@@ -68,6 +68,8 @@ export class Scenario {
 
     UIManager.setLoadingScreenVisible(true)
 
+    console.log(this.map.settings)
+
     this.drawMap()
 
     this.loadingManager.onFinishedCallback = () => {
@@ -84,7 +86,7 @@ export class Scenario {
 
     let width = this.map.settings.width
     let depth = this.map.settings.depth
-    let height = 10
+    let height = 20
 
     const currentMap = this.map
     const currentMapGrounds = currentMap?.grounds || []
@@ -118,13 +120,13 @@ export class Scenario {
         event.position.x === x
         && event.position.y === y
         && event.position.z === z)
-    if (!paintedEvent) {
-      return
+
+    if (paintedEvent) {
+      console.log(paintedEvent)
+      const evtPosition = new Vector3(x, y, z)
+
+      new Event(this.world, evtPosition, paintedEvent.eventUuid)
     }
-
-    const evtPosition = new Vector3(x, y, z)
-
-    new Event(this.world, evtPosition, paintedEvent.eventUuid)
   }
 
   handleGround = (x: number, y: number, z: number, currentMapGrounds: IMapGround[], sceneChildren: Mesh[]) => {
@@ -132,33 +134,33 @@ export class Scenario {
       ground.position.x === x
       && ground.position.y === y
       && ground.position.z === z)
-    if (!paintedGround) {
-      return
+
+    if (paintedGround) {
+      var entry: Mesh;
+      entry = groundMesh.clone()
+  
+      const ground = this.entityTextureBank?.[paintedGround?.entityUuid]
+      if (ground) {
+        ground.wrapS = RepeatWrapping
+        ground.repeat.set(1, 1)
+      }
+      entry.material = new MeshBasicMaterial({ map: ground })
+  
+      entry.position.set(x, y, z)
+      sceneChildren.push(entry)
+  
+      // Physics
+      let physics = new BoxCollider({ size: new Vector3(entry.scale.x / 2, entry.scale.y / 2, entry.scale.z / 2) })
+      physics.body.position.copy(cannonVector(entry.position))
+      physics.body.quaternion.copy(cannonQuaternion(entry.quaternion))
+      physics.body.computeAABB()
+  
+      physics.body.shapes.forEach((shape) => {
+        shape.collisionFilterMask = ~CollisionGroups.TrimeshColliders
+      })
+  
+      this.world.physicsWorld.addBody(physics.body)
     }
-    var entry: Mesh;
-    entry = groundMesh.clone()
-
-    const ground = this.entityTextureBank?.[paintedGround?.entityUuid]
-    if (ground) {
-      ground.wrapS = RepeatWrapping
-      ground.repeat.set(1, 1)
-    }
-    entry.material = new MeshBasicMaterial({ map: ground })
-
-    entry.position.set(x, y, z)
-    sceneChildren.push(entry)
-
-    // Physics
-    let physics = new BoxCollider({ size: new Vector3(entry.scale.x / 2, entry.scale.y / 2, entry.scale.z / 2) })
-    physics.body.position.copy(cannonVector(entry.position))
-    physics.body.quaternion.copy(cannonQuaternion(entry.quaternion))
-    physics.body.computeAABB()
-
-    physics.body.shapes.forEach((shape) => {
-      shape.collisionFilterMask = ~CollisionGroups.TrimeshColliders
-    })
-
-    this.world.physicsWorld.addBody(physics.body)
   }
 
   spawnPlayer = (initialPosition: Vector3) => {

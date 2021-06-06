@@ -14,6 +14,7 @@ import { MapListEditor } from "./components/map-list-editor/map-list-editor";
 
 export const EditorKeys = {
   PAINT_MODE: ['ShiftLeft'],
+  DELETE_MODE: ['KeyE']
 }
 
 export class Editor {
@@ -33,21 +34,23 @@ export class Editor {
 
   // Scene
   isPainting: boolean
+  isDeleting: boolean
   
   constructor() {
     this.drawGui()
 
     this.toolbarEditor = new ToolbarEditor(this.navbarUi)
-    this.toolbarEditor.onModeChange = this.onModeChange
 
     this.entityEditor = new EntityEditor(this.sidebarUi)
     this.mapListEditor = new MapListEditor(this.sidebarUi)
 
     this.inputManager = new InputManager();
-    this.inputManager.onKeyPressedChange = this.handleKeys;
 
     this.eventEditor = new EventEditor()
     this.mapEditor = new MapEditor(this)
+
+    this.inputManager.onKeyPressedChange = this.handleKeys;
+    this.toolbarEditor.onModeChange = this.onModeChange
   }
 
   // UI
@@ -67,6 +70,9 @@ export class Editor {
     const isPainting = EditorKeys.PAINT_MODE.every(key => keysPressed.includes(key))
 
     this.isPainting = isPainting
+
+    const isDeleting = EditorKeys.DELETE_MODE.every(key => keysPressed.includes(key))
+    this.isDeleting = isDeleting
   }
 
   onModeChange = () => {

@@ -449,9 +449,9 @@ export class Character extends Object3D implements IWorldEntity {
   rotateModel = (): void => {
     this.lookAt(this.position.x + this.orientation.x, this.position.y + this.orientation.y, this.position.z + this.orientation.z)
 
-    this.tiltContainer.rotation.z = (-this.angularVelocity * 2.3 * this.velocity.length())
+    this.tiltContainer.rotation.z = (-this.angularVelocity * 1.3 * this.velocity.length())
 
-    this.tiltContainer.position.setY((Math.cos(Math.abs(this.angularVelocity * 2.3 * this.velocity.length())) / 2) - 0.5) 
+    this.tiltContainer.position.setY((Math.cos(Math.abs(this.angularVelocity * 1.3 * this.velocity.length())) / 2) - 0.5) 
   }
 
   jump = (initJumpSpeed = -1): void => {

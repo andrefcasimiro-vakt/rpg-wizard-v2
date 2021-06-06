@@ -7,6 +7,8 @@ export class ModalContext {
   modalNavbar: HTMLElement
   modalContent: HTMLElement
 
+  onClose: () => void;
+
   drawGui = () => {
     this.modalContainer = document.createElement('div')
 
@@ -64,6 +66,10 @@ export class ModalContext {
   }
 
   close = () => {
+    if (this.onClose) {
+      this.onClose()
+    }
+
     document.body.removeChild(this.modalContainer)
   }
 

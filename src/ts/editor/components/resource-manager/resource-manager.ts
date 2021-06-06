@@ -4,6 +4,7 @@ import { createElement } from "../../utils/ui";
 import { Modal } from "../modal";
 import { AssetManager } from "./asset-manager/asset-manager";
 import { CharacterManager } from "./asset-manager/character-manager/character-manager";
+import { TextureManager } from "./asset-manager/texture-manager/texture-manager";
 import * as styles from './resource-manager.css'
 
 // Keys must match Resources interface on src/ts/storage/resources
@@ -19,26 +20,61 @@ export const resourcePaths = {
 export const assetManagers = {
   characters: CharacterManager,
   props: AssetManager,
-  textures: AssetManager,
+  textures: TextureManager,
   fx: AssetManager,
   bgm: AssetManager,
   se: AssetManager,
 }
 
+const HASH = 'resources'
+
 export class ResourceManager {
 
   public onResourceSelection: (resource) => void;
 
-  selectedResourceFolder: string = Object.keys(resourcePaths)[0]
+  selectedResourceFolder: string
 
   selectedResourceUuid: string
 
   constructor() {
-    
+    window.addEventListener('hashchange', () => {
+      this.handleHashChange()
+    })
+
+    // Need to call at the beginning as well
+    this.handleHashChange()
+  }
+
+  handleHashChange = () => {
+    if (window.location.hash.includes(HASH)) {
+      Modal.open(this.getGui())
+
+      this.handleSelection(window.location.hash)
+    }
+  }
+
+  handleSelection = (hash: string) => {
+    const paths = Object.keys(resourcePaths)
+
+    const targetFolder = paths.find(path => hash.includes(path))
+
+    if (targetFolder) {
+      this.selectedResourceFolder = targetFolder
+
+      const folderResources = (getResources()?.[targetFolder] || []) as IResource[]
+      const selectedResource = folderResources.find(resource => hash.includes(resource.uuid))
+      this.selectedResourceUuid = selectedResource?.uuid
+
+      if (hash.includes('mode=edit')) {
+        this.updateAsset()
+      }
+
+      this.update()
+    }
   }
 
   open = () => {
-    Modal.open(this.getGui())
+    window.location.hash = `${HASH}&category=${Object.keys(resourcePaths)[0]}`
   }
 
   getGui = (): HTMLElement => {
@@ -105,7 +141,7 @@ export class ResourceManager {
     const editResourceButton = createElement('button', styles.button) as HTMLButtonElement
     editResourceButton.innerHTML = 'Edit resource'
     editResourceButton.disabled = !this.selectedResourceUuid
-    editResourceButton.onclick = this.updateAsset
+    editResourceButton.onclick = this.handleAssetToUpdate
     sidebarToolbarContainer.appendChild(editResourceButton)
 
     const removeResourceButton = createElement('button', styles.button) as HTMLButtonElement
@@ -134,15 +170,12 @@ export class ResourceManager {
   }
 
   handleSelectedResourceFolder = (nextFolder: string) => {
-    this.selectedResourceFolder = nextFolder
-
-    this.update()
+    this.selectedResourceUuid = null
+    window.location.hash = `${HASH}&category=${nextFolder}`
   }
 
   handleResourceSelection = (uuid: string) => {
-    this.selectedResourceUuid = uuid
-
-    this.update()
+    window.location.hash = `${HASH}&category=${this.selectedResourceFolder}&resource=${uuid}`
   }
 
   addAsset = () => {
@@ -154,6 +187,10 @@ export class ResourceManager {
     }
 
     instance.open()
+  }
+
+  handleAssetToUpdate = () => {
+    window.location.hash = `${HASH}&category=${this.selectedResourceFolder}&resource=${this.selectedResourceUuid}&mode=edit`
   }
 
   updateAsset = () => {
@@ -172,6 +209,11 @@ export class ResourceManager {
     instance.assetUrl = payload.downloadUrl
 
     instance.open()
+
+    instance.onClose = () => {
+      const nextState = window.location.hash
+      window.location.hash = nextState.replace('&mode=edit', '')
+    }
   }
 
   handleChangesToResource = (payload: IResource, type: 'add' | 'update', instance) => {

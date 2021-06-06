@@ -8,7 +8,7 @@ import { ModelViewer } from "../../model-viewer/model-viewer";
 import * as styles from './asset-manager.css'
 
 export class AssetManager {
-  modalContext: ModalContext = new ModalContext()
+  modalContext: ModalContext
   
   assetUuid: string;
   assetName: string;
@@ -16,28 +16,28 @@ export class AssetManager {
 
   modelViewer: ModelViewer
 
-  scale: number = 0.006
-
   public handleOnSave: (payload: IResource) => void
+
+  public onClose: () => void
 
   resourceType: string 
 
   constructor(resourceType: string) {
+    this.modalContext = new ModalContext()
+    this.modalContext.onClose = this.close
+
     this.resourceType = resourceType
+
+    this.setupAsset()
+  }
+
+  setupAsset = () => {
+
   }
 
   open = () => {
     if (!this.assetUuid) {
       this.assetUuid = shortid.generate()
-    }
-
-    // Character case
-    const characters = getResources()?.characters
-    const target = characters?.find(x => x.uuid == this.assetUuid) as IResourceCharacter
-    if (!target) {
-      this.scale = 0.006
-    } else {
-      this.scale = target.scale
     }
 
     this.modalContext.open(this.getGui())
@@ -53,33 +53,8 @@ export class AssetManager {
     grid.appendChild(assetSettingsContainer)
     assetSettingsContainer.appendChild(this.getAssetConfigurationGui())
 
-    if (this.assetUrl && this.resourceType == 'characters') {
-      const modelViewContainer = this.getModelViewerContainerGui()
-      assetSettingsContainer.appendChild(modelViewContainer)
-
-      this.modelViewer = new ModelViewer(modelViewContainer, 300, 300, this.scale)
-      this.modelViewer.load(this.assetUrl, () => {
-        this.renderAssetSettings(grid)
-      })
-    }
-
-    console.log(this.resourceType)
-
-    if (this.assetUrl && this.resourceType == 'textures') {
-      const imagePreview = createElement('img', styles.textureImage) as HTMLImageElement
-      assetSettingsContainer.appendChild(imagePreview)
-
-      imagePreview.src = this.assetUrl
-    }
-
-    return container
-  }
-
-  /** Loads asset settings after the asset has been loaded */
-  renderAssetSettings = (parent: HTMLElement) => {
-    // Children need to be draswn after model viewer loads the model so we can access it here
     const childrenContainer = createElement('div', styles.childrenContainer)
-    parent.appendChild(childrenContainer)
+    grid.appendChild(childrenContainer)
     childrenContainer.appendChild(this.getAssetGui())
 
     const submitButton = createElement('button', styles.submitButton) as HTMLButtonElement
@@ -88,8 +63,11 @@ export class AssetManager {
     submitButton.onclick = () => {
       this.handleOnSave(this.getPayload())
     }
-    parent.appendChild(submitButton)
+    grid.appendChild(submitButton)
+
+    return container
   }
+
 
   getHeader = (title: string) => {
     const headerText = createElement('h3', styles.headerText)
@@ -98,16 +76,9 @@ export class AssetManager {
     return headerText
   }
 
-  getModelViewerContainerGui = (): HTMLElement => {
-    const modelViewerContainer = createElement('div', styles.modelViewerContainer)
-    return modelViewerContainer
-  }
-
   getAssetConfigurationGui = (): HTMLElement => {
     const assetConfigurationContent = createElement('div', styles.assetConfigurationContent)
     
-    // assetConfigurationContent.appendChild(this.getHeader('Asset Information'))
-
     this.renderInput(
       assetConfigurationContent,
       'Asset Name',
@@ -169,7 +140,9 @@ export class AssetManager {
   }
 
   close = () => {
-    this.modalContext.close()
+    if (this.onClose) {
+      this.onClose()
+    }
   }
 
   getPayload = (): IResource => {

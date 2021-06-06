@@ -7,9 +7,7 @@ declare namespace AssetManagerCssNamespace {
     container: string;
     grid: string;
     headerText: string;
-    modelViewerContainer: string;
     submitButton: string;
-    textureImage: string;
   }
 }
 

@@ -4,6 +4,7 @@ declare namespace CharacterManagerCssNamespace {
     animationContent: string;
     animationField: string;
     container: string;
+    modelViewerContainer: string;
   }
 }
 

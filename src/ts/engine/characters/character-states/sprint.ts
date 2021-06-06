@@ -12,7 +12,7 @@ export class Sprint extends CharacterStateBase implements ICharacterState {
 		this.character.rotationSimulator.damping = 0.8;
 		this.character.rotationSimulator.mass = 50;
 
-		this.character.setArcadeVelocityTarget(1.4);
+		this.character.setArcadeVelocityTarget(1.1);
 		this.playAnimation(DefaultAnimations.Sprint, 0.1);
 	}
 

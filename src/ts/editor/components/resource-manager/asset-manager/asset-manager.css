@@ -1,5 +1,6 @@
 :local .container {
   display: flex;
+  margin-top: 10px;
 }
 
 :local .grid {
@@ -18,7 +19,6 @@
 :local .assetSettingsContainer {
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
 }
 
 :local .assetConfigurationContent {
@@ -29,7 +29,6 @@
 :local .childrenContainer {
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
 }
 
 :local .childrenContent {
@@ -37,30 +36,16 @@
   flex-direction: column;
 }
 
-:local input {
+:local .container label {
+  margin-bottom: 10px;
+}
+
+:local .container input {
   padding: 5px;
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
 :local .submitButton {
   padding: 5px;
 
-}
-
-:local .modelViewerContainer {
-  display: flex; 
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  margin: 10px 0;
-}
-
-:local .modelViewerContainer canvas {
-  border: 2px solid #d9ecf2;
-}
-
-:local .textureImage {
-  object-fit: contain;
-  width: 256px;
-  height: 256px;
 }

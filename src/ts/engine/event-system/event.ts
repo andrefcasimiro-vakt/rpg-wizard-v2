@@ -28,7 +28,7 @@ export class Event implements IUpdatable, IGameStateSubscriber {
 
   player: Character
 
-  enabled: boolean = true
+  isEnabled: boolean = true
 
   loadingManager: LoadingManager
 
@@ -37,6 +37,8 @@ export class Event implements IUpdatable, IGameStateSubscriber {
   pageCharacter: Character
 
   lastActiveCharacterGraphicUuid: string
+  
+  previousPlayerPosition: Vector3
 
   constructor(world: World, eventPositon: Vector3, eventUuid: string) {
     this.world = world
@@ -53,8 +55,6 @@ export class Event implements IUpdatable, IGameStateSubscriber {
   }
 
   setupEvent = () => {
-    this.enabled = false
-
     this.setupActivePage()
 
     this.setupGraphic()
@@ -102,7 +102,7 @@ export class Event implements IUpdatable, IGameStateSubscriber {
 
       this.pageCharacter = new Character(model, resource.animationClips, this.world)
 
-      this.pageCharacter.setPosition(this.eventPosition.x, this.eventPosition.y, this.eventPosition.z)
+      this.pageCharacter.setPosition(this.eventPosition.x, this.eventPosition.y + 1, this.eventPosition.z)
 
       this.world.add(this.pageCharacter)
 
@@ -126,12 +126,7 @@ export class Event implements IUpdatable, IGameStateSubscriber {
 
     const isPlayerPositionSameAsEvent = this?.player?.position.clone()?.round()?.equals(eventPosition?.round())
 
-    if (this.enabled == false && !isPlayerPositionSameAsEvent) {
-      // If player has moved away after event has played, reset the event
-      this.enabled = true
-    }
-
-    if (this.enabled == false) {
+    if (this.isEnabled == false) {
       return
     }
 
@@ -141,8 +136,9 @@ export class Event implements IUpdatable, IGameStateSubscriber {
 
     if (isPlayerPositionSameAsEvent) {
       if (isCollisionDependant || this.world.inputManager.keyPressed?.code === 'KeyE') {
+        this.isEnabled = false
+        this.previousPlayerPosition = this.player.position.clone()
         this.dispatch()
-        this.enabled = false
       }
     }
   }
@@ -160,6 +156,8 @@ export class Event implements IUpdatable, IGameStateSubscriber {
     if (this.activePage.trigger  == EventTrigger.PARALLEL_PROCESS) {
       this.dispatch()
     }
+
+    setTimeout(() => { this.isEnabled = true }, 1000)
   }
 
   onGameStateUpdate = () => {
