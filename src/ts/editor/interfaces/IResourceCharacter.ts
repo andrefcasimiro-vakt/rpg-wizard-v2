@@ -1,8 +1,6 @@
 import { IAnimationClip } from "./IAnimationClip";
-import { IResource } from "./IResource";
+import { IResourceModel } from "./IResourceModel";
 
-export interface IResourceCharacter extends IResource {
-  scale: number
-
+export interface IResourceCharacter extends IResourceModel {
   animationClips: IAnimationClip[]
 }

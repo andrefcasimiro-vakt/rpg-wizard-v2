@@ -30,7 +30,7 @@ export class ModelViewer {
     this.modelScale = modelScale
   }
 
-  load = (assetPath: string, onModelLoadFinish?: () => void) => {
+  load = (assetPath: string, onModelLoadFinish?: (loadedModel) => void) => {
     this.loadingSpinner = document.createElement('div')
     this.loadingSpinner.className = "loader"
     this.container.appendChild(this.loadingSpinner)
@@ -80,7 +80,7 @@ export class ModelViewer {
       })
 
       if (onModelLoadFinish) {
-        onModelLoadFinish()
+        onModelLoadFinish(fbx)
       }
 
       this.container.removeChild(this.loadingSpinner)

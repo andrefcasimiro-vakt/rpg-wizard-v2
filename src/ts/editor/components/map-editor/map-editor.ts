@@ -93,7 +93,10 @@ export class MapEditor extends SceneRenderer {
 
     entities.forEach(entity => {
       const entityResource = EntitiesStorage.getEntityResource(entity.uuid)
-      this.entityTextureBank[entity.uuid] = new TextureLoader().load(entityResource.downloadUrl)
+
+      if (entityResource) {
+        this.entityTextureBank[entity.uuid] = new TextureLoader().load(entityResource.downloadUrl)
+      }
     })
   }
 

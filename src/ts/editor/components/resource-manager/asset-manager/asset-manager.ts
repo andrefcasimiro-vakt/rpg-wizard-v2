@@ -27,11 +27,9 @@ export class AssetManager {
     this.modalContext.onClose = this.close
 
     this.resourceType = resourceType
+      }
 
-    this.setupAsset()
-  }
-
-  setupAsset = () => {
+  setupAsset () {
 
   }
 
@@ -39,6 +37,8 @@ export class AssetManager {
     if (!this.assetUuid) {
       this.assetUuid = shortid.generate()
     }
+
+    this.setupAsset()
 
     this.modalContext.open(this.getGui())
   }
@@ -96,6 +96,9 @@ export class AssetManager {
       'assetUrl',
       (value) => {
         this.assetUrl = value
+        
+        this.onModelChange()
+
         this.update()
       },
       this.assetUrl,
@@ -152,4 +155,6 @@ export class AssetManager {
       downloadUrl: this.assetUrl,
     }
   }
+
+  onModelChange = () => {}
 }

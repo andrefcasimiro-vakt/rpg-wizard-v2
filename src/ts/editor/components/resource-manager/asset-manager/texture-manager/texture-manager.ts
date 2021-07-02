@@ -10,7 +10,7 @@ import * as styles from './texture-manager.css'
 
 export class TextureManager extends AssetManager {
 
-  setupAsset = () => {
+  setupAsset() {
 
   }
 

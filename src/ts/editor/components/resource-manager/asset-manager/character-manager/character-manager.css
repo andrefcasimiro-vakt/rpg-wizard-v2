@@ -27,20 +27,3 @@
 :local .animationContainer label {
   font-size: 12px;
 }
-
-:local input {
-  margin: 10px 0px;
-}
-
-
-:local .modelViewerContainer {
-  display: flex; 
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  margin: 10px 0;
-}
-
-:local .modelViewerContainer canvas {
-  border: 2px solid #d9ecf2;
-}

@@ -1,0 +1,46 @@
+:local .container {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+:local .modelViewerContainer {
+  display: flex; 
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+:local .modelViewerContainer canvas {
+  border: 2px solid #d9ecf2;
+}
+
+:local input {
+  margin: 10px 0px;
+}
+
+:local .materialInputContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-left: 1px solid var(--primaryDark);
+}
+
+:local .checkboxContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+:local .checkboxContainer input {
+  margin-left: 10px;
+}
+
+:local .materialName {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background: var(--primary);
+  color: var(--dark);
+}

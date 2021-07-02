@@ -54,7 +54,10 @@ export class Scenario {
 
     entities.forEach(entity => {
       const entityResource = EntitiesStorage.getEntityResource(entity.uuid)
-      this.entityTextureBank[entity.uuid] = new TextureLoader().load(entityResource.downloadUrl)
+
+      if (entityResource) {
+        this.entityTextureBank[entity.uuid] = new TextureLoader().load(entityResource.downloadUrl)
+      }
     })
   }
 
@@ -67,8 +70,6 @@ export class Scenario {
     world.cameraOperator.phi = 15
 
     UIManager.setLoadingScreenVisible(true)
-
-    console.log(this.map.settings)
 
     this.drawMap()
 
@@ -122,7 +123,6 @@ export class Scenario {
         && event.position.z === z)
 
     if (paintedEvent) {
-      console.log(paintedEvent)
       const evtPosition = new Vector3(x, y, z)
 
       new Event(this.world, evtPosition, paintedEvent.eventUuid)

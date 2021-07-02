@@ -3,20 +3,20 @@ import { IAnimationClip } from "src/ts/editor/interfaces/IAnimationClip";
 import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter";
 import { createElement } from "src/ts/editor/utils/ui";
 import { getResources } from "src/ts/storage/resources";
-import { ModelViewer } from "../../../model-viewer/model-viewer";
-import { AssetManager } from "../asset-manager";
+import { AbstractModelManager } from "../abstract-model-manager/abstract-model-manager";
 import * as styles from './character-manager.css'
 
-export class CharacterManager extends AssetManager {
+export class CharacterManager extends AbstractModelManager {
 
   animationClips: IAnimationClip[] = []
-  scale: number = 0.006
 
-  setupAsset = () => {
+  setupAsset() {
     const characters = getResources()?.characters
     const target = characters?.find(x => x.uuid == this.assetUuid) as IResourceCharacter
-  
-    this.scale = target ? target.scale : 0.006
+    console.log(characters)
+    console.log(this.assetUuid)
+    this.scale = target?.scale || 0.006
+    this.materials = target?.materials || []
   }
 
   getAssetGui = () => {
@@ -37,45 +37,14 @@ export class CharacterManager extends AssetManager {
     return container
   }
 
-  renderModelPreview = (container) => {
-      const modelViewContainer = this.getModelViewerContainerGui()
-      container.appendChild(modelViewContainer)
-
-      this.modelViewer = new ModelViewer(modelViewContainer, 300, 300, this.scale)
-      this.modelViewer.load(this.assetUrl, () => {
-
-      })
-  }
-
-  getModelViewerContainerGui = (): HTMLElement => {
-    const modelViewerContainer = createElement('div', styles.modelViewerContainer)
-    return modelViewerContainer
-  }
-
-  renderScaleInput = (container) => {
-    const scaleInputLabel = document.createElement('label')
-    scaleInputLabel.innerHTML = 'Model Scale'
-    scaleInputLabel.htmlFor = 'modelScale'
-    container.appendChild(scaleInputLabel)
-
-    const scaleInput = document.createElement('input')
-    scaleInput.defaultValue = this.scale.toString()
-    scaleInput.type = 'number'
-    scaleInput.onchange = (evt) => {
-      // @ts-ignore
-      const val = evt.target.value
-      
-      this.scale = val
-
-      this.update()
-    }
-
-    container.appendChild(scaleInput)
-  }
-
   renderAnimationFields = (container) => {
     const content = createElement('div', styles.animationContent) as HTMLDivElement
     container.appendChild(content)
+
+    const label = document.createElement('label')
+    label.innerHTML = 'Animations'
+    content.appendChild(label)
+
 
     if (!this.animationClips.length) {
       Object.keys(DefaultAnimations).forEach(x=> {
@@ -157,6 +126,7 @@ export class CharacterManager extends AssetManager {
       downloadUrl: this.assetUrl,
       scale: this.scale,
       animationClips: this.animationClips,
+      materials: this.materials,
     }
   }
 }
