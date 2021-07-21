@@ -105,7 +105,6 @@ export const initializeStore = () => {
             },
           ],
           scale: 0.006,
-          materials: [],
         }
       ],
       props: [],

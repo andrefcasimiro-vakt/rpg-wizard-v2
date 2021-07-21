@@ -1,10 +1,7 @@
 import shortid = require("shortid");
 import { IResource } from "src/ts/editor/interfaces/IResource";
-import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter";
 import { createElement } from "src/ts/editor/utils/ui"
-import { getResources } from "src/ts/storage/resources";
 import { ModalContext } from "../../modal-context"
-import { ModelViewer } from "../../model-viewer/model-viewer";
 import * as styles from './asset-manager.css'
 
 export class AssetManager {
@@ -13,8 +10,6 @@ export class AssetManager {
   assetUuid: string;
   assetName: string;
   assetUrl: string;
-
-  modelViewer: ModelViewer
 
   public handleOnSave: (payload: IResource) => void
 
@@ -97,8 +92,6 @@ export class AssetManager {
       (value) => {
         this.assetUrl = value
         
-        this.onModelChange()
-
         this.update()
       },
       this.assetUrl,
@@ -155,6 +148,4 @@ export class AssetManager {
       downloadUrl: this.assetUrl,
     }
   }
-
-  onModelChange = () => {}
 }

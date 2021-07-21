@@ -2,7 +2,7 @@ import shortid = require('shortid')
 import { MapStorage } from 'src/ts/storage'
 import { AddIcon } from '../../icons/add-icon'
 import { MapIcon } from '../../icons/map-icon'
-import { createElement, createListPanelGUI } from '../../utils/ui'
+import { createElement } from '../../utils/ui'
 import { ContextMenu } from '../context-menu/context-menu'
 import * as styles from './map-list-editor.css'
 
@@ -136,6 +136,7 @@ export class MapListEditor {
       uuid: shortid.generate(),
       name: 'Untitled map',
       grounds: [],
+      props: [],
       events: [],
       settings: {
         width: 20,
@@ -152,10 +153,6 @@ export class MapListEditor {
   removeMap = (mapUuid: string) => {
     MapStorage.remove(mapUuid)
 
-    
-
     this.refresh()
   }
-
-
 }

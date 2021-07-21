@@ -37,6 +37,7 @@ export class ResourceManager {
 
   selectedResourceUuid: string
 
+  /** If set, only this folder will be available to the user when opening the ResourceManager modal */
   allowedFolder: string = null
 
   constructor() {
@@ -107,7 +108,7 @@ export class ResourceManager {
       folderButton.innerHTML = resourcePath[1]
       folderButton.onclick = () => this.handleSelectedResourceFolder(resourcePath[0])
 
-      console.log(this.allowedFolder, resourcePath[0])
+      // handles the case where we open the resource manager modal and want to lock folders that should not be accessed
       if (this.allowedFolder && this.allowedFolder !== `graphics/${resourcePath[0]}`) {
         folderButton.disabled = true  
       }

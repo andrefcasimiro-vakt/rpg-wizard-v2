@@ -1,6 +1,7 @@
 import { xor } from "lodash";
 import _ = require("lodash");
 import shortid = require("shortid");
+import { EntityLoader } from "src/ts/editor/components/entity-loader/entity-loader";
 import { EntityType } from "src/ts/editor/enums/EntityType";
 import { IMapProp } from "src/ts/editor/interfaces/IMapProp";
 import { EntitiesStorage, MapStorage } from "src/ts/storage";
@@ -37,12 +38,11 @@ export class MapEditor extends SceneRenderer {
   entityEditor: EntityEditor
   mapListEditor: MapListEditor
 
+  entityLoader: EntityLoader;
+
   currentMap: IMap = null
 
   currentLayer = 0
-
-  entityTextureBank: { [entityUuid: string]: Texture } = {}
-  entityPropBank: { [entityUuid: string]: Object3D } = {}
 
   showGrid = true
 
@@ -56,11 +56,12 @@ export class MapEditor extends SceneRenderer {
     this.eventEditor = editor.eventEditor
     this.mapListEditor = editor.mapListEditor
     this.mapListEditor.onMapSelected = this.onMapSelected
+
+    this.entityLoader = editor.entityLoader
+
     this.currentMap = MapStorage.getCurrentMap()
 
     this.initGridSettings()
-
-    this.resources()
 
     this.initBrush()
 
@@ -90,32 +91,6 @@ export class MapEditor extends SceneRenderer {
 
     this.basePlaneTransparent = this.basePlane.clone()
     this.basePlaneTransparent.material = new MeshBasicMaterial({ transparent: true, opacity: 0 })
-  }
-
-  resources = () => {
-    const entities = EntitiesStorage.get()
-
-    const fbxLoader = new FBXLoader()
-    const textureLoader = new TextureLoader()
-
-    entities.forEach(entity => {
-      const { entityResource, category } = EntitiesStorage.getEntityResource(entity.uuid)
-
-      if (!entityResource) {
-        return;
-      }
-
-      if (category == EntityType.Props) {
-        fbxLoader.load(entityResource.downloadUrl, (object) => {
-          object.scale.setScalar(0.01)
-          this.entityPropBank[entity.uuid] = object;
-        })
-      } else if (category == EntityType.Tiles) {
-        this.entityTextureBank[entity.uuid]  = textureLoader.load(entityResource.downloadUrl)
-      }
-      
-    })
-
   }
 
   initBrush = () => {
@@ -175,71 +150,12 @@ export class MapEditor extends SceneRenderer {
       const y = intersectionPosition.y - 1
       const z = intersectionPosition.z
       const pos = new Vector3(evt.position.x, evt.position.y, evt.position.z).round()
-      console.log('pos: ', pos)
 
       return pos.x == x && pos.y == y && pos.z == z
     })
 
     if (targetEvent) {
       this.eventEditor.open(targetEvent.eventUuid)
-    }
-  }
-
-  handlePaintGround = (nextPosition: Vector3) => {
-    if (EntitiesStorage.getCurrentMode() !== EntityType.Tiles) {
-      return;
-    }
-
-    const currentEntityUuid = EntitiesStorage.getCurrentEntity()?.uuid
-
-    const ground = this.entityTextureBank?.[currentEntityUuid]
-    if (ground?.wrapS) {
-      ground.wrapS = RepeatWrapping
-      ground.repeat.set(1, 1)
-    }
-
-    if (this.toolbarEditor.mode === ToolbarMode.DRAW && ground) {      
-      this.brush.material = new MeshBasicMaterial({ map: ground })
-    }
-
-    if (this.editor.isPainting) {
-      this.paintGround(nextPosition, currentEntityUuid)
-    }
-  }
-
-  handlePaintProp = (nextPosition: Vector3) => {
-    if (EntitiesStorage.getCurrentMode() !== EntityType.Props) {
-      return;
-    }
-
-    const currentEntityUuid = EntitiesStorage.getCurrentEntity()?.uuid
-
-    if (this.toolbarEditor.mode === ToolbarMode.DRAW) {      
-      this.brush.material = new MeshBasicMaterial({ color: 'green' })
-    }
-
-    if (this.editor.isPainting) {
-      this.paintProp(nextPosition, currentEntityUuid)
-    }
-  }
-
-  handlePaintEvent = (nextPosition: Vector3) => {
-    if (this.toolbarEditor.mode === ToolbarMode.EVENT) {
-      this.brush.material = new MeshBasicMaterial({ color: 'purple' })
-    }
-
-    if (this.editor.isPainting) {
-      this.paintEvent(nextPosition)
-    }
-  }
-  
-  handlePaintStartPosition = (nextPosition: Vector3) => {
-    if (this.toolbarEditor.mode === ToolbarMode.STARTING_POSITION) {
-      this.brush.material = new MeshBasicMaterial({ color: 'yellow' })
-    }
-
-    if ((this.editor.isPainting) {
-      this.paintStartingPosition(nextPosition)    
     }
   }
 
@@ -269,6 +185,81 @@ export class MapEditor extends SceneRenderer {
     }
   }
 
+
+  handlePaintGround = (nextPosition: Vector3) => {
+    if (EntitiesStorage.getCurrentMode() !== EntityType.Tiles) {
+      return;
+    }
+
+    const currentEntityUuid = EntitiesStorage.getCurrentEntity()?.uuid
+
+    if (this.toolbarEditor.mode === ToolbarMode.DRAW) {   
+      const ground = this.entityLoader.entityTextureBank?.[currentEntityUuid]
+      
+      if (ground?.wrapS) {
+        ground.wrapS = RepeatWrapping
+        ground.repeat.set(1, 1)
+     
+        this.brush.material = new MeshBasicMaterial({ map: ground })
+      }
+    }
+
+    if (!this.editor.isPainting) {
+      return;
+    }
+
+    this.paintGround(nextPosition, currentEntityUuid)
+  }
+
+  handlePaintProp = (nextPosition: Vector3) => {
+    if (EntitiesStorage.getCurrentMode() !== EntityType.Props) {
+      return;
+    }
+
+    if (this.toolbarEditor.mode !== ToolbarMode.DRAW) {      
+      return;
+    }
+
+    const currentEntityUuid = EntitiesStorage.getCurrentEntity()?.uuid
+    this.brush.material = new MeshBasicMaterial({ color: 'green' })
+
+    if (!this.editor.isPainting) {
+      return;
+    }
+    
+    this.paintProp(nextPosition, currentEntityUuid)
+  }
+
+  handlePaintEvent = (nextPosition: Vector3) => {
+    if (this.toolbarEditor.mode !== ToolbarMode.EVENT) {
+      return;
+    }
+    
+    this.brush.material = new MeshBasicMaterial({ color: 'purple' })
+    
+    if (!this.editor.isPainting) {
+      return;
+    }
+
+    this.paintEvent(nextPosition)
+  }
+  
+  handlePaintStartPosition = (nextPosition: Vector3) => {
+    if (this.toolbarEditor.mode !== ToolbarMode.STARTING_POSITION) {
+      return;
+    }
+    
+    this.brush.material = new MeshBasicMaterial({ color: 'yellow' })
+    
+
+    if (!this.editor.isPainting) {
+      return;
+    }
+    
+    this.paintStartingPosition(nextPosition)
+  }
+
+  //#region - Paint Methods
   paintGround = (nextPosition: Vector3, entityUuid: string) => {
     const grounds = this.currentMap.grounds || []
     const idx = grounds.findIndex(x =>
@@ -369,6 +360,15 @@ export class MapEditor extends SceneRenderer {
     this.renderScene()
   }
 
+  paintStartingPosition = (nextPosition: Vector3) => {
+    MapStorage.setStartingPosition(nextPosition)
+    this.renderScene()
+  }
+
+  //#endregion
+
+  //#region - Remove Methods
+
   removeEvent = (position: Vector3) => {
     const events = this.currentMap.events || []
 
@@ -383,7 +383,7 @@ export class MapEditor extends SceneRenderer {
     }
 
     const storageEvents = getEvents() || []
-    console.log(events[idx])
+
     const nextState = storageEvents.filter(x => x.uuid != events[idx].eventUuid)
     setEvents(nextState)
 
@@ -420,13 +420,10 @@ export class MapEditor extends SceneRenderer {
     this.renderScene()
   }
 
-  paintStartingPosition = (nextPosition: Vector3) => {
-    MapStorage.setStartingPosition(nextPosition)
-    this.renderScene()
-  }
+  //#endregion
 
   onEntityChange = () => {
-    const ground = this.entityTextureBank?.[EntitiesStorage.getCurrentEntity().uuid]
+    const ground = this.entityLoader.entityTextureBank?.[EntitiesStorage.getCurrentEntity().uuid]
 
     if (ground?.wrapS) {
       ground.wrapS = RepeatWrapping
@@ -458,7 +455,7 @@ export class MapEditor extends SceneRenderer {
             var entry = this.groundMesh.clone()
             entry.position.set(i, h, j)
 
-            const ground = this.entityTextureBank?.[existingGround?.entityUuid]
+            const ground = this.entityLoader.entityTextureBank?.[existingGround?.entityUuid]
 
             if (ground?.wrapS) {
               ground.wrapS = RepeatWrapping
@@ -485,7 +482,7 @@ export class MapEditor extends SceneRenderer {
   renderProps = () => {
     const currentMapProps = this.currentMap?.props || []
     currentMapProps.forEach(mapProp => {
-      const prop = this.entityPropBank?.[mapProp?.entityUuid]?.clone()
+      const prop = this.entityLoader.entityPropBank?.[mapProp?.entityUuid]?.clone()
       if (!prop) {
         return
       }

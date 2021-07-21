@@ -33,7 +33,7 @@ export class ToolbarEditor implements IEditor {
 
   private resourceManager = new ResourceManager()
 
-  public get mode() {
+  public get mode(): ToolbarMode {
     return this._mode
   }
 

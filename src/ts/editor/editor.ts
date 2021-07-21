@@ -8,6 +8,7 @@ import { MapEditor } from "./components/map-editor/map-editor";
 import * as styles from './editor.css'
 import { createElement } from "./utils/ui";
 import { MapListEditor } from "./components/map-list-editor/map-list-editor";
+import { EntityLoader } from "src/ts/editor/components/entity-loader/entity-loader";
 
 // const NAVBAR_HEIGHT = 50
 // const SIDEBAR_WIDTH = 300
@@ -18,6 +19,9 @@ export const EditorKeys = {
 }
 
 export class Editor {
+  // Loaders
+  entityLoader: EntityLoader;
+
   // Editors
   toolbarEditor: ToolbarEditor;
   entityEditor: EntityEditor;
@@ -37,6 +41,8 @@ export class Editor {
   isDeleting: boolean
   
   constructor() {
+    this.entityLoader = new EntityLoader()
+
     this.drawGui()
 
     this.toolbarEditor = new ToolbarEditor(this.navbarUi)

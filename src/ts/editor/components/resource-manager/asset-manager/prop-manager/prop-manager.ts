@@ -1,4 +1,3 @@
-import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
 import { IAnimationClip } from "src/ts/editor/interfaces/IAnimationClip";
 import { IResourceModel } from "src/ts/editor/interfaces/IResourceModel";
 import { createElement } from "src/ts/editor/utils/ui";
@@ -15,14 +14,11 @@ export class PropManager extends AbstractModelManager {
     const target = props?.find(x => x.uuid == this.assetUuid) as IResourceModel
   
     this.scale = target?.scale || 0.006
-    this.materials = target?.materials || []
   }
 
   getAssetGui = () => {
     const container = createElement('div', styles.container)
     
-    const prop = getResources()?.props?.find(x => x.uuid == this.assetUuid) as IResourceModel
-    console.log(this)
     // Render model preview
     this.renderModelPreview(container)
 
@@ -38,7 +34,6 @@ export class PropManager extends AbstractModelManager {
       displayName: this.assetName,
       downloadUrl: this.assetUrl,
       scale: this.scale,
-      materials: this.materials,
     }
   }
 }

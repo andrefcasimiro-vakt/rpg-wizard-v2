@@ -15,7 +15,6 @@ export class CharacterManager extends AbstractModelManager {
     const target = characters?.find(x => x.uuid == this.assetUuid) as IResourceCharacter
 
     this.scale = target?.scale || 0.006
-    this.materials = target?.materials || []
   }
 
   getAssetGui = () => {
@@ -127,7 +126,6 @@ export class CharacterManager extends AbstractModelManager {
       downloadUrl: this.assetUrl,
       scale: this.scale,
       animationClips: this.animationClips,
-      materials: this.materials,
     }
   }
 }
