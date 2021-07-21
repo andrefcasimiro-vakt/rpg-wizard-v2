@@ -34,11 +34,14 @@ class EntitiesStorageHandler extends StorageHandler<IEntity> {
     let resourceBank: IResource[] = []
     if (entity.category == EntityType.Props) {
       resourceBank = getResources().props
-    } else if (entity.category == EntityType.Ground) {
+    } else if (entity.category == EntityType.Tiles) {
       resourceBank = getResources().textures
     }
 
-    return resourceBank.find(x => x.uuid == entity.graphicUuid)
+    return {
+      entityResource: resourceBank.find(x => x.uuid == entity.graphicUuid),
+      category: entity.category,
+    }
   }
 }
 

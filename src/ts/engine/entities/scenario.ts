@@ -53,7 +53,7 @@ export class Scenario {
     const entities = EntitiesStorage.get()
 
     entities.forEach(entity => {
-      const entityResource = EntitiesStorage.getEntityResource(entity.uuid)
+      const { entityResource } = EntitiesStorage.getEntityResource(entity.uuid)
 
       if (entityResource) {
         this.entityTextureBank[entity.uuid] = new TextureLoader().load(entityResource.downloadUrl)

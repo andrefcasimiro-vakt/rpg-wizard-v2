@@ -13,7 +13,7 @@ export class AbstractModelManager extends AssetManager {
 
   materialContainer: HTMLDivElement
 
-  getAssetGui = () => {    
+  getAssetGui = () => { 
     const container = createElement('div', styles.container)
     
     // Render model preview
@@ -31,6 +31,7 @@ export class AbstractModelManager extends AssetManager {
   }
 
   renderModelPreview = (container) => {
+
     const modelViewContainer = this.getModelViewerContainerGui()
     container.appendChild(modelViewContainer)
 

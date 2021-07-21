@@ -22,7 +22,7 @@ export class PropManager extends AbstractModelManager {
     const container = createElement('div', styles.container)
     
     const prop = getResources()?.props?.find(x => x.uuid == this.assetUuid) as IResourceModel
-
+    console.log(this)
     // Render model preview
     this.renderModelPreview(container)
 

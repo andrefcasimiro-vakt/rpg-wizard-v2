@@ -4,6 +4,7 @@ import { createElement } from "../../utils/ui";
 import { Modal } from "../modal";
 import { AssetManager } from "./asset-manager/asset-manager";
 import { CharacterManager } from "./asset-manager/character-manager/character-manager";
+import { PropManager } from "./asset-manager/prop-manager/prop-manager";
 import { TextureManager } from "./asset-manager/texture-manager/texture-manager";
 import * as styles from './resource-manager.css'
 
@@ -19,7 +20,7 @@ export const resourcePaths = {
 
 export const assetManagers = {
   characters: CharacterManager,
-  props: AssetManager,
+  props: PropManager,
   textures: TextureManager,
   fx: AssetManager,
   bgm: AssetManager,
@@ -35,6 +36,8 @@ export class ResourceManager {
   selectedResourceFolder: string
 
   selectedResourceUuid: string
+
+  allowedFolder: string = null
 
   constructor() {
     window.addEventListener('hashchange', () => {
@@ -73,8 +76,8 @@ export class ResourceManager {
     }
   }
 
-  open = () => {
-    window.location.hash = `${HASH}&category=${Object.keys(resourcePaths)[0]}`
+  open = (folderPath = Object.keys(resourcePaths)[0]) => {
+    window.location.hash = `${HASH}&category=${folderPath}`
   }
 
   getGui = (): HTMLElement => {
@@ -103,6 +106,11 @@ export class ResourceManager {
       folderContainer.appendChild(folderButton)
       folderButton.innerHTML = resourcePath[1]
       folderButton.onclick = () => this.handleSelectedResourceFolder(resourcePath[0])
+
+      console.log(this.allowedFolder, resourcePath[0])
+      if (this.allowedFolder && this.allowedFolder !== `graphics/${resourcePath[0]}`) {
+        folderButton.disabled = true  
+      }
     })
 
     const resourceList: IResource[] = getResources()?.[this.selectedResourceFolder] || []

@@ -13,8 +13,7 @@ export class CharacterManager extends AbstractModelManager {
   setupAsset() {
     const characters = getResources()?.characters
     const target = characters?.find(x => x.uuid == this.assetUuid) as IResourceCharacter
-    console.log(characters)
-    console.log(this.assetUuid)
+
     this.scale = target?.scale || 0.006
     this.materials = target?.materials || []
   }
@@ -25,14 +24,16 @@ export class CharacterManager extends AbstractModelManager {
     const character = getResources()?.characters?.find(x => x.uuid == this.assetUuid) as IResourceCharacter
     this.animationClips = character?.animationClips || []
 
-    // Render model preview
-    this.renderModelPreview(container)
+    if (this.assetUrl) {
+      // Render model preview
+      this.renderModelPreview(container)
 
-    // Model Scale
-    this.renderScaleInput(container)
+      // Model Scale
+      this.renderScaleInput(container)
 
-    // Model Animations
-    this.renderAnimationFields(container)
+      // Model Animations
+      this.renderAnimationFields(container)
+    }
 
     return container
   }

@@ -113,7 +113,7 @@ export class MapListEditor {
         const parent = mapList.querySelector(`#map-${map.parentUuid}`) as HTMLElement
       
         mapItem.style.marginLeft = '20px'
-        parent.appendChild(mapItem)
+        parent?.appendChild(mapItem)
 
       } else {
         mapList.appendChild(mapItem)

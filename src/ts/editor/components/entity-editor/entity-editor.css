@@ -27,6 +27,9 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
+  min-height: 100px;
+  max-height: 200px;
+  overflow-y: scroll;
 }
 
 :local .entityBtn {
@@ -56,4 +59,35 @@
 
 :local .entityBtnActive:hover {
   opacity: 1;
+}
+
+:local .menuContainer {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background-color: var(--primary);
+}
+
+:local .menuItem {
+  display: flex;
+  flex-direction: row;
+  flex-grow: 1;
+}
+
+:local .menuItemButton {
+  display: flex;
+  width: 100%;
+  background-color: var(--neutral);
+  border: none;
+  border: 1px solid var(--primaryDark);
+  padding: 5px;
+}
+
+:local .menuItemButtonActive {
+  display: flex;
+  width: 100%;
+  background-color: var(--primaryDark);
+  border: none;
+  border: 1px solid var(--primaryDark);
+  padding: 5px;
 }

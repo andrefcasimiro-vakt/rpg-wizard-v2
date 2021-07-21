@@ -7,6 +7,10 @@ declare namespace EntityEditorCssNamespace {
     entityBtnActive: string;
     guiHeaderText: string;
     header: string;
+    menuContainer: string;
+    menuItem: string;
+    menuItemButton: string;
+    menuItemButtonActive: string;
     panel: string;
   }
 }

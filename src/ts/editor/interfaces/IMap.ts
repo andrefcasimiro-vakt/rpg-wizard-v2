@@ -1,3 +1,4 @@
+import { IMapProp } from "src/ts/editor/interfaces/IMapProp";
 import { Vector3 } from "three";
 import { IMapEvent } from "./IMapEvent";
 import { IMapGround } from "./IMapGround";
@@ -9,6 +10,8 @@ export interface IMap {
   name: string;
 
   grounds: IMapGround[];
+
+  props: IMapProp[];
 
   events: IMapEvent[];
 

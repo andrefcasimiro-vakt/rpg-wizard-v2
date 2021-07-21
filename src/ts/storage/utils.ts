@@ -19,25 +19,25 @@ export const initializeStore = () => {
         uuid: shortid.generate(),
         name: 'Grass',
         graphicUuid: 'grass',
-        category: EntityType.Ground,
+        category: EntityType.Tiles,
       },
       {
         uuid: shortid.generate(),
         name: 'Stone',
         graphicUuid: 'stone',
-        category: EntityType.Ground,
+        category: EntityType.Tiles,
       },
       {
         uuid: shortid.generate(),
         name: 'Dirt',
         graphicUuid: 'dirt',
-        category: EntityType.Ground,
+        category: EntityType.Tiles,
       },
     ])
   }
 
   if (EntitiesStorage.getCurrentMode() == null) {
-    EntitiesStorage.setCurrentMode(EntityType.Ground)
+    EntitiesStorage.setCurrentMode(EntityType.Tiles)
   }
 
   if (EntitiesStorage.getCurrentEntity() == null) {
@@ -49,6 +49,7 @@ export const initializeStore = () => {
       uuid: shortid.generate(),
       name: 'Map',
       grounds: [],
+      props: [],
       events: [],
       settings: {
         width: 20,
@@ -104,6 +105,7 @@ export const initializeStore = () => {
             },
           ],
           scale: 0.006,
+          materials: [],
         }
       ],
       props: [],

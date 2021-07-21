@@ -1,5 +1,4 @@
 export enum EntityType {
-  Ground = 'Ground',
-  Stairs = 'Stairs',
+  Tiles = 'Tiles',
   Props = 'Props'
 }

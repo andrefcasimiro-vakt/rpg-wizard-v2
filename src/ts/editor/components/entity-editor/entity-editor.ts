@@ -1,4 +1,5 @@
 import shortid = require("shortid");
+import { ModelViewer } from "src/ts/editor/components/model-viewer/model-viewer";
 import { EntitiesStorage } from "src/ts/storage";
 import { getResources } from "src/ts/storage/resources";
 import { EntityType } from "../../enums/EntityType";
@@ -6,7 +7,9 @@ import { AddIcon } from "../../icons/add-icon";
 import { IEntity } from "../../interfaces/IEntity";
 import { IResource } from "../../interfaces/IResource";
 import { createElement } from "../../utils/ui";
+import { ContextMenu } from "../context-menu/context-menu";
 import * as styles from './entity-editor.css'
+import { EntitySettings } from "./entity-settings/entity-settings";
 
 export class EntityEditor {
 
@@ -15,6 +18,8 @@ export class EntityEditor {
   parent: HTMLElement
   container: HTMLElement
 
+  entitySettings: EntitySettings = new EntitySettings()
+
   constructor(parent: HTMLElement) {
     this.parent = parent
 
@@ -22,9 +27,10 @@ export class EntityEditor {
     this.parent.appendChild(this.container)
 
     this.drawGui()
+
+    this.entitySettings.onChange = this.refresh
   }
 
-  // GUI
   drawGui = () => {
     this.container.innerHTML = ''
 
@@ -36,16 +42,17 @@ export class EntityEditor {
     guiHeaderText.innerHTML = 'Entities List'
 
     const addButton = createElement('button', styles.addButton)
-    addButton.title = 'Add map'
+    addButton.title = 'Add entity'
 
     guiHeader.appendChild(addButton)
     addButton.innerHTML = AddIcon
     addButton.onclick = this.addEntity
 
-    const panel = createElement('div', styles.panel)
+    const panel = createElement('div', styles.panel) as HTMLDivElement
     this.container.appendChild(panel)
 
     this.drawEntities(panel)
+    this.drawTypeMenu(panel)
   }
 
   drawEntities = (parent: HTMLElement) => {
@@ -58,7 +65,7 @@ export class EntityEditor {
 
     const filteredEntities = entities?.filter(x => x.category == selectedMode)
     let resourceBank: IResource[]
-    if (selectedMode == EntityType.Ground) {
+    if (selectedMode == EntityType.Tiles) {
       resourceBank = getResources().textures
     } else if (selectedMode == EntityType.Props) {
       resourceBank = getResources().props
@@ -67,6 +74,26 @@ export class EntityEditor {
     filteredEntities?.forEach(entity => {
       const entityBtn = createElement('button', styles.entityBtn) as HTMLButtonElement
       entitiesList.appendChild(entityBtn)
+
+      entityBtn.addEventListener('contextmenu', e => {
+        e.preventDefault()
+
+        ContextMenu.open(
+          entityBtn,
+          e,
+          {
+            'Entity Settings': () => {
+              this.entitySettings.open(entity.uuid)
+            },
+            'Remove Entity': () => {
+              EntitiesStorage.remove(entity.uuid)
+
+              this.refresh()
+            },
+          }
+        )
+      })
+
 
       const resource = resourceBank?.find(x => x.uuid == entity.graphicUuid) as IResource
       entityBtn.style.backgroundImage = `url(${resource?.downloadUrl})`
@@ -84,6 +111,33 @@ export class EntityEditor {
     })
   }
 
+  drawTypeMenu = (panel: HTMLDivElement) => {
+    const activeType = EntitiesStorage.getCurrentMode()
+
+    const menuContainer = createElement('ul', styles.menuContainer) as HTMLUListElement
+    panel.appendChild(menuContainer)
+
+    const tilesItem = createElement('li', styles.menuItem) as HTMLLIElement
+    menuContainer.appendChild(tilesItem)
+    const tilesButton = createElement('button', activeType === EntityType.Tiles ? styles.menuItemButtonActive : styles.menuItemButton)  as HTMLButtonElement
+    tilesItem.appendChild(tilesButton)
+    tilesButton.innerHTML = 'Tiles'
+    tilesButton.onclick = () => {
+      EntitiesStorage.setCurrentMode(EntityType.Tiles)
+      this.refresh()
+    }
+
+    const propsItem = createElement('li', styles.menuItem) as HTMLLIElement
+    menuContainer.appendChild(propsItem)
+    const propsButton = createElement('button', activeType === EntityType.Props ? styles.menuItemButtonActive : styles.menuItemButton)  as HTMLButtonElement
+    propsItem.appendChild(propsButton)
+    propsButton.innerHTML = 'Props'
+    propsButton.onclick = () => {
+      EntitiesStorage.setCurrentMode(EntityType.Props)
+      this.refresh()
+    }
+  }
+  
   refresh = () => {
     this.drawGui()
   }
