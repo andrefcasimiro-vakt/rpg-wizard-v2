@@ -1,25 +1,24 @@
 import THREE = require("three");
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { OrbitControls } from '../../../../lib/orbitControls'
-import { Object3D } from "three";
+import { Object3D} from "three";
+import { setupMeshProperties } from "src/ts/engine/utils/function-library";
 
 export class ModelViewer {
   scene: THREE.Scene
   model: THREE.Scene | THREE.Object3D
   renderer: THREE.WebGLRenderer
   camera: THREE.PerspectiveCamera
+  controls: OrbitControls
+
+  fbxLoader: FBXLoader
 
   container: HTMLElement
+  loadingSpinner: HTMLElement
 
   width: number
   height: number
-
   modelScale: number
-
-  loadingSpinner: HTMLElement
-
-  controls: any
 
   constructor(container, width, height, modelScale) {
     this.container = container
@@ -28,13 +27,10 @@ export class ModelViewer {
     this.height = height
 
     this.modelScale = modelScale
+    this.fbxLoader = new FBXLoader()
   }
 
-  load = (assetPath: string, onModelLoadFinish?: (loadedModel) => void) => {
-    this.loadingSpinner = document.createElement('div')
-    this.loadingSpinner.className = "loader"
-    this.container.appendChild(this.loadingSpinner)
-
+  setupScene = () => {
     this.scene = null
 
     this.scene = new THREE.Scene();
@@ -61,32 +57,11 @@ export class ModelViewer {
     mesh.receiveShadow = true;
     this.scene.add( mesh );
 
-    this.renderer = new THREE.WebGLRenderer( { antialias: true } );
+    this.renderer = new THREE.WebGLRenderer( { antialias: true, preserveDrawingBuffer: true } );
     this.renderer.setPixelRatio(this.width / this.height);
     this.renderer.setSize(this.width, this.height)
     this.renderer.outputEncoding = THREE.sRGBEncoding;
     this.renderer.shadowMap.enabled = true;
-
-    var loader
-    loader = new FBXLoader()
-    loader.load(assetPath, (fbx: Object3D) => {
-      fbx.scale.setScalar(this.modelScale)
-
-      this.model = fbx
-      this.scene.add(fbx);
-
-      fbx.traverse((object: any) => {
-        if (object.isMesh) object.castShadow = true;
-      })
-
-      if (onModelLoadFinish) {
-        onModelLoadFinish(fbx)
-      }
-
-      this.container.removeChild(this.loadingSpinner)
-      this.container.appendChild(this.renderer.domElement);
-      this.animate()
-    })
 
     // camera
     this.camera = new THREE.PerspectiveCamera( 45, this.width / this.height, 1, 5000 );
@@ -98,18 +73,56 @@ export class ModelViewer {
     window.addEventListener( 'resize', this.onWindowResize );
   }
 
-  onWindowResize = () => {
+  load = async (assetPath: string, onModelLoadFinish?: (loadedModel) => void) => {
+    this.loadingSpinner = document.createElement('div')
+    this.loadingSpinner.className = "loader"
+    this.container.appendChild(this.loadingSpinner)
 
+    this.setupScene()
+
+    if (!assetPath) {
+      this.container.removeChild(this.loadingSpinner)
+      return
+    }
+
+    this.fbxLoader.load(assetPath, (fbx: Object3D) => {
+
+      this.container.removeChild(this.loadingSpinner)
+      this.container.appendChild(this.renderer.domElement);
+
+      fbx.scale.setScalar(this.modelScale)
+
+      this.model = fbx
+
+      fbx?.children?.forEach(setupMeshProperties)
+
+      this.scene.add(fbx);
+
+      fbx.traverse((object: any) => {
+        if (object.isMesh) object.castShadow = true;
+      })
+
+      if (onModelLoadFinish) {
+        onModelLoadFinish(fbx)
+      }
+
+      this.animate()
+    })
+  }
+
+  onWindowResize = () => {
     this.camera.aspect = this.width / this.height
     this.camera.updateProjectionMatrix();
 
     this.renderer.setSize(this.width, this.height);
+  }
 
+  takeScreenshot = () => {
+    return this.renderer.domElement.toDataURL("image/png");
   }
   
   animate = () => {
     requestAnimationFrame(this.animate)
-
     this.renderer.render(this.scene, this.camera)
   }
 

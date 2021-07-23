@@ -1,4 +1,4 @@
-import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
+import { AnimationEditor } from "src/ts/editor/components/common/animation-editor/animation-editor";
 import { IAnimationClip } from "src/ts/editor/interfaces/IAnimationClip";
 import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter";
 import { createElement } from "src/ts/editor/utils/ui";
@@ -17,7 +17,7 @@ export class CharacterManager extends AbstractModelManager {
     this.scale = target?.scale || 0.006
   }
 
-  getAssetGui = () => {
+  getAssetGuiDetails = () => {
     const container = createElement('div', styles.container)
     
     const character = getResources()?.characters?.find(x => x.uuid == this.assetUuid) as IResourceCharacter
@@ -31,90 +31,8 @@ export class CharacterManager extends AbstractModelManager {
       this.renderScaleInput(container)
 
       // Model Animations
-      this.renderAnimationFields(container)
+      new AnimationEditor().renderAnimationFields(container, this.animationClips)
     }
-
-    return container
-  }
-
-  renderAnimationFields = (container) => {
-    const content = createElement('div', styles.animationContent) as HTMLDivElement
-    container.appendChild(content)
-
-    const label = document.createElement('label')
-    label.innerHTML = 'Animations'
-    content.appendChild(label)
-
-
-    if (!this.animationClips.length) {
-      Object.keys(DefaultAnimations).forEach(x=> {
-        this.animationClips.push({
-          uuid: x,
-          name: x,
-          animationClipPath: '',
-        })
-      })
-    }
-
-    Object.keys(DefaultAnimations).forEach(defaultAnimationName => {
-      const animationContainer = createElement('div', styles.animationContainer)
-      content.appendChild(animationContainer)
-
-      const existingAnimationIndex = this.animationClips.findIndex(x => x.name == defaultAnimationName)
-      const existingAnimation = this.animationClips?.[existingAnimationIndex]
-
-      // Animation name
-      var animationNameInput = this.renderAnimationInput(
-        'Animation Name',
-        defaultAnimationName,
-        (value) => {
-          this.animationClips[existingAnimationIndex] = {
-            ...existingAnimation,
-            name: value,
-          }
-        },
-        true
-      ) as HTMLInputElement
-
-      animationContainer.appendChild(animationNameInput)
-
-      // Animation url
-      var animationUrlInput = this.renderAnimationInput(
-        `Animation Clip URL`,
-        existingAnimation?.animationClipPath || '',
-        (value) => {
-          this.animationClips[existingAnimationIndex] = {
-            ...existingAnimation,
-            animationClipPath: value,
-          }
-        }
-      )
-      animationContainer.appendChild(animationUrlInput)
-    })
-  }
-  
-  renderAnimationInput = (
-    animationName,
-    currentValue,
-    onChange,
-    disabled = false,
-  ) => {
-    var container = document.createElement('div')
-    container.style.display = 'flex'
-    container.style.flexDirection = 'column'
-
-    var label = document.createElement('label')
-    label.htmlFor = animationName
-    label.innerHTML = animationName
-    container.appendChild(label)
-
-    var input = document.createElement('input')
-    input.id = animationName
-    input.value = currentValue
-    input.disabled = disabled
-    // @ts-ignore
-    input.onchange = (evt) => onChange(evt.target.value)
-    container.appendChild(input)
 
     return container
   }
@@ -126,6 +44,7 @@ export class CharacterManager extends AbstractModelManager {
       downloadUrl: this.assetUrl,
       scale: this.scale,
       animationClips: this.animationClips,
+      materials: this.materials,
     }
   }
 }

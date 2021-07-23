@@ -1,0 +1,25 @@
+
+:local .materialInputContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  border-left: 1px solid var(--primaryDark);
+}
+
+:local .checkboxContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+:local .checkboxContainer input {
+  margin-left: 10px;
+}
+
+:local .materialName {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background: var(--primary);
+  color: var(--dark);
+}

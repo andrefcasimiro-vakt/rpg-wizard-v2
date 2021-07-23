@@ -1,9 +1,6 @@
 declare namespace AbstractModelManagerCssNamespace {
   export interface IAbstractModelManagerCss {
-    checkboxContainer: string;
     container: string;
-    materialInputContainer: string;
-    materialName: string;
     modelViewerContainer: string;
   }
 }

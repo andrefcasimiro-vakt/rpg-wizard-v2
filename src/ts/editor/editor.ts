@@ -43,17 +43,19 @@ export class Editor {
   constructor() {
     this.entityLoader = new EntityLoader()
 
+
     this.drawGui()
 
     this.toolbarEditor = new ToolbarEditor(this.navbarUi)
 
-    this.entityEditor = new EntityEditor(this.sidebarUi)
+    this.entityEditor = new EntityEditor(this.sidebarUi, this.entityLoader)
     this.mapListEditor = new MapListEditor(this.sidebarUi)
 
     this.inputManager = new InputManager();
 
     this.eventEditor = new EventEditor()
     this.mapEditor = new MapEditor(this)
+    this.entityLoader.onFinishedCallback = this.mapEditor.renderScene
 
     this.inputManager.onKeyPressedChange = this.handleKeys;
     this.toolbarEditor.onModeChange = this.onModeChange

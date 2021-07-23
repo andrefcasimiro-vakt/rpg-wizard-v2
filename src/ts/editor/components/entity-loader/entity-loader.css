@@ -1,0 +1,19 @@
+:local .loadingEntitiesContainer {
+  display: none;
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  background-color: var(--primaryLight);
+  z-index: 999;
+
+  transform: translate(-40%, -50%);
+}
+
+:local .messageContainer {
+  display: flex;
+  padding: 10px;
+}
+
+:local .message {
+
+}

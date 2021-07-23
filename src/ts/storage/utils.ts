@@ -104,6 +104,7 @@ export const initializeStore = () => {
               animationClipPath: 'build/assets/animations/ninja/landing',
             },
           ],
+          materials: [],
           scale: 0.006,
         }
       ],

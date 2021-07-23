@@ -22,11 +22,9 @@ export class AssetManager {
     this.modalContext.onClose = this.close
 
     this.resourceType = resourceType
-      }
-
-  setupAsset () {
-
   }
+
+  setupAsset () {}
 
   open = () => {
     if (!this.assetUuid) {
@@ -46,32 +44,26 @@ export class AssetManager {
 
     const assetSettingsContainer = createElement('div', styles.assetSettingsContainer)
     grid.appendChild(assetSettingsContainer)
-    assetSettingsContainer.appendChild(this.getAssetConfigurationGui())
+    assetSettingsContainer.appendChild(this.getAssetNameAndUrlSettings())
 
     const childrenContainer = createElement('div', styles.childrenContainer)
     grid.appendChild(childrenContainer)
-    childrenContainer.appendChild(this.getAssetGui())
+    childrenContainer.appendChild(this.getAssetGuiDetails())
 
     const submitButton = createElement('button', styles.submitButton) as HTMLButtonElement
     submitButton.innerHTML = 'Save changes'
     submitButton.style.marginTop = '20px'
     submitButton.onclick = () => {
       this.handleOnSave(this.getPayload())
+
+      this.modalContext.close()
     }
     grid.appendChild(submitButton)
 
     return container
   }
 
-
-  getHeader = (title: string) => {
-    const headerText = createElement('h3', styles.headerText)
-    headerText.innerHTML = title
-
-    return headerText
-  }
-
-  getAssetConfigurationGui = (): HTMLElement => {
+  getAssetNameAndUrlSettings = (): HTMLElement => {
     const assetConfigurationContent = createElement('div', styles.assetConfigurationContent)
     
     this.renderInput(
@@ -93,6 +85,8 @@ export class AssetManager {
         this.assetUrl = value
         
         this.update()
+
+        this.onAssetUrlChange()
       },
       this.assetUrl,
       'Copy the direct link of your mixamo 3D model (available formats: .fbx)'
@@ -101,7 +95,7 @@ export class AssetManager {
     return assetConfigurationContent
   }
 
-  getAssetGui = (): HTMLElement => {
+  getAssetGuiDetails = (): HTMLElement => {
     const childrenContent = createElement('div', styles.childrenContent)
     
     return childrenContent
@@ -141,11 +135,13 @@ export class AssetManager {
     }
   }
 
-  getPayload = (): IResource => {
+  getPayload(): IResource {
     return {
       uuid: this.assetUuid,
       displayName: this.assetName,
       downloadUrl: this.assetUrl,
     }
   }
+
+  onAssetUrlChange = () => {}
 }

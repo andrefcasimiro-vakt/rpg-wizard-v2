@@ -1,33 +1,92 @@
 import _ = require("lodash");
-import { Group, MeshPhongMaterial, Object3D, Quaternion, Vector3 } from "three";
+import { AdditiveBlending, BackSide, Blending, DoubleSide, MeshLambertMaterial, MeshPhongMaterial, MeshStandardMaterial, Object3D, Quaternion, RepeatWrapping, SrcAlphaFactor, TextureLoader, Vector3 } from "three";
 import { Space } from "../enums/space";
 import { SimulationFrame } from "../physics/spring-simulation/simulation-frame";
 import * as CANNON from 'cannon'
+import { getResources } from "src/ts/storage/resources";
+import { IResourceModel } from "src/ts/editor/interfaces/IResourceModel";
+import { IResourceMaterial } from "src/ts/editor/interfaces/IResourceMaterial";
+import THREE = require("three");
 
 // Mesh
 export function setupMeshProperties(child: Object3D): void {
   child.castShadow = true 
   child.receiveShadow = true
-  // @ts-ignore
-  if (child?.material?.map !== null) {
-    let mat = new MeshPhongMaterial()
-    mat.shininess = 0
-      // @ts-ignore
-    mat.name = child.material?.name
-      // @ts-ignore
-    mat.map = child.material?.map
-    // mat.map?.anisotropy = 4
-      // @ts-ignore
-    mat.aoMap = child.material?.aoMap
-      // @ts-ignore
-    mat.transparent = child.material?.transparent
-      // @ts-ignore
-    mat.skinning = child.material?.skinning
 
-      // @ts-ignore
-    child.material = mat
+  // @ts-ignore
+  let material: MeshStandardMaterial | MeshStandardMaterial[] = child?.material
+
+  if (!material) {
+    return;
   }
 
+  if (Array.isArray(material)) {
+    // @ts-ignore
+    child?.material.forEach((childMat, index) => {
+      const material = setupMeshMaterial(childMat)
+
+      // @ts-ignore
+      child?.material[index] = material
+    })
+  } else {
+    // @ts-ignore
+    const material = setupMeshMaterial(child?.material)
+    // @ts-ignore
+    child?.material = material
+  }
+
+  if (child?.children?.length) {
+    child?.children?.forEach(setupMeshProperties)
+  }
+}
+
+function setupMeshMaterial(meshMaterial: MeshStandardMaterial) {
+
+  const meshResources = [...getResources().characters, ...getResources().props] as IResourceModel[]
+  var resourceMaterial: IResourceMaterial
+
+  for (const meshResource of meshResources) {
+    const match = meshResource.materials?.find(resourceMaterial => resourceMaterial?.materialName == meshMaterial?.name)
+
+    if (match) {
+      resourceMaterial = match
+      break
+    }
+  }
+
+  let mat = new MeshStandardMaterial()
+  mat.name = meshMaterial?.name
+  mat.aoMap = meshMaterial?.aoMap
+  mat.transparent = meshMaterial?.transparent
+  mat.skinning = meshMaterial?.skinning
+
+  if (resourceMaterial?.useDefault) {
+    mat.map = meshMaterial.map
+    return mat
+  }
+  
+  if (resourceMaterial?.texture) {
+    var squareT = new TextureLoader().load(resourceMaterial?.texture)
+    squareT.wrapS = RepeatWrapping
+    squareT.repeat.set(1, 1)
+    mat.map = squareT
+
+    const textureMaterial = new MeshStandardMaterial({
+      map: squareT,
+      emissiveIntensity: 1,
+      transparent: true,})
+
+    return textureMaterial
+  }
+
+  if (resourceMaterial?.color) {
+    // @ts-ignore
+    mat = new MeshStandardMaterial({ color: resourceMaterial.color})
+
+    return mat
+  }
+
+  return mat
 }
 
 // Angles

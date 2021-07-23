@@ -40,6 +40,8 @@ export class ResourceManager {
   /** If set, only this folder will be available to the user when opening the ResourceManager modal */
   allowedFolder: string = null
 
+  instance: AssetManager
+
   constructor() {
     window.addEventListener('hashchange', () => {
       this.handleHashChange()
@@ -69,11 +71,12 @@ export class ResourceManager {
       const selectedResource = folderResources.find(resource => hash.includes(resource.uuid))
       this.selectedResourceUuid = selectedResource?.uuid
 
+      this.update()
+
       if (hash.includes('mode=edit')) {
+        console.log('hey')
         this.updateAsset()
       }
-
-      this.update()
     }
   }
 
@@ -189,13 +192,15 @@ export class ResourceManager {
 
   addAsset = () => {
     const Manager = assetManagers[this.selectedResourceFolder] as typeof AssetManager
-    const instance = new Manager(this.selectedResourceFolder)
+    this.instance = new Manager(this.selectedResourceFolder)
     
-    instance.handleOnSave = (payload: IResource) => {
-      this.handleChangesToResource(payload, 'add', instance)
+    this.instance.handleOnSave = (payload: IResource) => {
+      this.handleChangesToResource(payload, 'add', this.instance)
+
+      this.instance.close()
     }
 
-    instance.open()
+    this.instance.open()
   }
 
   handleAssetToUpdate = () => {
@@ -203,23 +208,27 @@ export class ResourceManager {
   }
 
   updateAsset = () => {
+    if (this.instance) {
+      this.instance.close()
+    }
+
     const Manager = assetManagers[this.selectedResourceFolder] as typeof AssetManager
-    const instance = new Manager(this.selectedResourceFolder)
+    this.instance = new Manager(this.selectedResourceFolder)
     
-    instance.handleOnSave = (payload: IResource) => {
-      this.handleChangesToResource(payload, 'update', instance)
+    this.instance.handleOnSave = (payload: IResource) => {
+      this.handleChangesToResource(payload, 'update', this.instance)
     }
 
     const resources = getResources()?.[this.selectedResourceFolder] as IResource[]
     const payload = resources.find(x => x.uuid == this.selectedResourceUuid)
 
-    instance.assetUuid = payload.uuid
-    instance.assetName = payload.displayName
-    instance.assetUrl = payload.downloadUrl
+    this.instance.assetUuid = payload.uuid
+    this.instance.assetName = payload.displayName
+    this.instance.assetUrl = payload.downloadUrl
 
-    instance.open()
+    this.instance.open()
 
-    instance.onClose = () => {
+    this.instance.onClose = () => {
       const nextState = window.location.hash
       window.location.hash = nextState.replace('&mode=edit', '')
     }

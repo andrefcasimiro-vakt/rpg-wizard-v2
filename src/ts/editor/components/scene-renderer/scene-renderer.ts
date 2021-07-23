@@ -44,10 +44,11 @@ export class SceneRenderer {
     const skyboxGeometry = new BoxGeometry(1000, 1000, 1000)
     const skyboxMaterial = new MeshBasicMaterial({ color: this.options.skyboxColor, side: BackSide })
     this.skybox = new Mesh(skyboxGeometry, skyboxMaterial)
+    this.skybox.castShadow = true
   }
 
   initAmbientLight = () => {
-    this.ambientLight = new AmbientLight(this.options.ambientLightColor)
+    this.ambientLight = new AmbientLight(this.options.ambientLightColor, 1)
   }
 
   initCamera = () => {

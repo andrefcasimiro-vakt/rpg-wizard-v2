@@ -1,4 +1,5 @@
 import shortid = require("shortid");
+import { EntityLoader } from "src/ts/editor/components/entity-loader/entity-loader";
 import { ModelViewer } from "src/ts/editor/components/model-viewer/model-viewer";
 import { EntitiesStorage } from "src/ts/storage";
 import { getResources } from "src/ts/storage/resources";
@@ -20,8 +21,12 @@ export class EntityEditor {
 
   entitySettings: EntitySettings = new EntitySettings()
 
-  constructor(parent: HTMLElement) {
+  entityLoader: EntityLoader
+
+  constructor(parent: HTMLElement, entityLoader: EntityLoader) {
     this.parent = parent
+
+    this.entityLoader = entityLoader
 
     this.container = createElement('div', styles.container)
     this.parent.appendChild(this.container)
@@ -29,6 +34,7 @@ export class EntityEditor {
     this.drawGui()
 
     this.entitySettings.onChange = this.refresh
+
   }
 
   drawGui = () => {
@@ -95,8 +101,9 @@ export class EntityEditor {
       })
 
 
-      const resource = resourceBank?.find(x => x.uuid == entity.graphicUuid) as IResource
-      entityBtn.style.backgroundImage = `url(${resource?.downloadUrl})`
+      const thumb = this.entityLoader.entityThumbnails?.[entity?.uuid]
+      entityBtn.style.backgroundImage = `url(${thumb})`
+      entityBtn.style.backgroundSize = 'cover'
 
       const isSelected = entity.uuid === selectedEntity?.uuid
       if (isSelected) {

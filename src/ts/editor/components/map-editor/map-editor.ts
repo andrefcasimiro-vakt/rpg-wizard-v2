@@ -6,7 +6,7 @@ import { EntityType } from "src/ts/editor/enums/EntityType";
 import { IMapProp } from "src/ts/editor/interfaces/IMapProp";
 import { EntitiesStorage, MapStorage } from "src/ts/storage";
 import { getEvents, setEvents } from "src/ts/storage/events";
-import { BoxGeometry, Intersection, Mesh, MeshBasicMaterial, Object3D, RepeatWrapping, Scene, Texture, TextureLoader, Vector, Vector3 } from "three";
+import { BoxGeometry, Intersection, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, RepeatWrapping, Scene, Texture, TextureLoader, Vector, Vector3 } from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader";
 import { Editor } from "../../editor";
 import { EventTrigger } from "../../enums/EventTrigger";
@@ -78,6 +78,8 @@ export class MapEditor extends SceneRenderer {
 
   initGridSettings = () => {
     this.groundMesh = new Mesh(new BoxGeometry(1, 1, 1))
+    this.groundMesh.castShadow = true
+    this.groundMesh.receiveShadow = true
 
     this.squareT = new TextureLoader().load('build/assets/square-thick.png')
     this.squareT.wrapS = RepeatWrapping
@@ -174,17 +176,58 @@ export class MapEditor extends SceneRenderer {
 
     this.handlePaintStartPosition(nextPosition)
     
-    if (this.editor.isDeleting) {
-      if (this.toolbarEditor.mode == ToolbarMode.EVENT) {
-        this.removeEvent(nextPosition)
-      }
 
-      if (this.toolbarEditor.mode == ToolbarMode.DRAW) {
-        this.removeGround(nextPosition)
-      }
-    }
+    this.handleRemoveGround(nextPosition)
+
+    this.handleRemoveEvent(nextPosition)
+
+    this.handleRemoveProp(nextPosition)
   }
 
+  handleRemoveEvent = (nextPosition) => {
+    if (!this.editor.isDeleting) {
+      return;
+    }
+
+    if (this.toolbarEditor.mode != ToolbarMode.EVENT) {
+      return;
+    }
+
+    this.removeEvent(nextPosition)
+  }
+
+  handleRemoveGround = (nextPosition) => {
+    if (!this.editor.isDeleting) {
+      return;
+    }
+
+    if (this.toolbarEditor.mode != ToolbarMode.DRAW) {
+      return;
+    }
+
+    if (EntitiesStorage.getCurrentMode() != EntityType.Tiles) {
+      return;
+    }
+
+    this.removeGround(nextPosition)
+  }
+
+
+  handleRemoveProp = (nextPosition) => {
+    if (!this.editor.isDeleting) {
+      return;
+    }
+
+    if (this.toolbarEditor.mode != ToolbarMode.DRAW) {
+      return;
+    }
+
+    if (EntitiesStorage.getCurrentMode() != EntityType.Props) {
+      return;
+    }
+
+    this.removeProp(nextPosition)
+  }
 
   handlePaintGround = (nextPosition: Vector3) => {
     if (EntitiesStorage.getCurrentMode() !== EntityType.Tiles) {
@@ -292,8 +335,7 @@ export class MapEditor extends SceneRenderer {
     )
 
     const payload: IMapProp = { position: nextPosition.clone(), entityUuid }
-      console.log(payload)
-      console.log(props)
+
     if (idx != -1) {
       props[idx] = payload
     } else {
@@ -420,6 +462,29 @@ export class MapEditor extends SceneRenderer {
     this.renderScene()
   }
 
+  removeProp = (position: Vector3) => {
+    const props = this.currentMap.props || []
+
+    const idx = props.findIndex(evt =>
+      evt.position.x == position.x
+      && evt.position.y == position.y
+      && evt.position.z == position.z
+    )
+    
+    if (idx == -1) {
+      return
+    }
+
+    _.pull(props, props[idx])
+
+    MapStorage.update({
+      ...this.currentMap,
+      props,
+    })
+
+    this.renderScene()
+  }
+
   //#endregion
 
   onEntityChange = () => {
@@ -435,40 +500,14 @@ export class MapEditor extends SceneRenderer {
     }
   }
 
-  renderGrounds = () => {
+  renderGrid = () => {
     const mapWidth = this.currentMap.settings?.width
     const mapDepth = this.currentMap.settings?.depth
     const mapHeight = 10
-    const currentMapGrounds = this.currentMap.grounds
-
-    const groundMaterial = new MeshBasicMaterial()
 
     for (let i = -mapWidth / 2; i < mapWidth / 2; i++) {
       for (let j = -mapDepth / 2; j < mapDepth / 2; j++) {
         for (let h = -mapHeight / 2; h < mapHeight / 2; h++) {
-
-          const existingGround = currentMapGrounds.find(ground => {
-            return ground.position.x == i && ground.position.y == h && ground.position.z == j
-          })
-
-          if (existingGround) {
-            var entry = this.groundMesh.clone()
-            entry.position.set(i, h, j)
-
-            const ground = this.entityLoader.entityTextureBank?.[existingGround?.entityUuid]
-
-            if (ground?.wrapS) {
-              ground.wrapS = RepeatWrapping
-              ground.repeat.set(1, 1)
-            }
-            entry.material = groundMaterial.clone()
-            // @ts-ignore
-            entry.material.map = ground
-
-            this.scene.add(entry)
-            continue
-          }
-
           var placeholderTile = this.showGrid ? this.basePlane.clone() : this.basePlaneTransparent.clone()
 
           placeholderTile.position.set(i, this.currentLayer, j)
@@ -477,6 +516,30 @@ export class MapEditor extends SceneRenderer {
         }
       }
     }
+  }
+
+  renderGrounds = () => {
+    const currentMapGrounds = this.currentMap.grounds || []
+
+    const groundMaterial = new MeshStandardMaterial()
+
+    currentMapGrounds.forEach(ground => {
+      var entry = this.groundMesh.clone()
+      const { x, y , z } = ground.position
+      entry.position.set(x, y, z)
+
+      const groundTexture = this.entityLoader.entityTextureBank?.[ground?.entityUuid]
+
+      if (groundTexture?.wrapS) {
+        groundTexture.wrapS = RepeatWrapping
+        groundTexture.repeat.set(1, 1)
+      }
+      entry.material = groundMaterial.clone()
+      // @ts-ignore
+      entry.material.map = groundTexture
+
+      this.scene.add(entry)
+    })
   }
 
   renderProps = () => {
@@ -521,6 +584,7 @@ export class MapEditor extends SceneRenderer {
   renderScene = () => {
     this.clearScene()
 
+    this.renderGrid()
     this.renderGrounds()
     this.renderProps()
 

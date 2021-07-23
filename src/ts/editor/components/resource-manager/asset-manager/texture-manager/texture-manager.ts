@@ -1,20 +1,13 @@
-import { DefaultAnimations } from "src/ts/editor/enums/DefaultAnimations";
-import { IAnimationClip } from "src/ts/editor/interfaces/IAnimationClip";
 import { IResource } from "src/ts/editor/interfaces/IResource";
-import { IResourceCharacter } from "src/ts/editor/interfaces/IResourceCharacter";
 import { createElement } from "src/ts/editor/utils/ui";
-import { getResources } from "src/ts/storage/resources";
-import { ModelViewer } from "../../../model-viewer/model-viewer";
 import { AssetManager } from "../asset-manager";
 import * as styles from './texture-manager.css'
 
 export class TextureManager extends AssetManager {
 
-  setupAsset() {
+  setupAsset() { }
 
-  }
-
-  getAssetGui = () => {
+  getAssetGuiDetails = () => {
     const container = createElement('div', styles.container)
     
     if (this.assetUrl) {
@@ -26,7 +19,6 @@ export class TextureManager extends AssetManager {
 
     return container
   }
-
 
   getPayload = (): IResource => {
     return {

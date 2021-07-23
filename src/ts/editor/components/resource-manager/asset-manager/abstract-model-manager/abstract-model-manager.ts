@@ -1,3 +1,5 @@
+import { MaterialEditor } from "src/ts/editor/components/common/material-editor/material-editor";
+import { IResourceMaterial } from "src/ts/editor/interfaces/IResourceMaterial";
 import { createElement } from "src/ts/editor/utils/ui";
 import { ModelViewer } from "../../../model-viewer/model-viewer";
 import { AssetManager } from "../asset-manager";
@@ -7,11 +9,13 @@ export class AbstractModelManager extends AssetManager {
 
   scale: number = 0.006
 
+  materials: IResourceMaterial[] = []
+
   materialContainer: HTMLDivElement
 
   modelViewer: ModelViewer
 
-  getAssetGui = () => { 
+  getAssetGuiDetails = () => { 
     const container = createElement('div', styles.container)
     
     // Render model preview
@@ -28,7 +32,13 @@ export class AbstractModelManager extends AssetManager {
     container.appendChild(modelViewContainer)
 
     this.modelViewer = new ModelViewer(modelViewContainer, 300, 300, this.scale)
-    this.modelViewer.load(this.assetUrl)
+    this.modelViewer.load(this.assetUrl, (loadedModel) => {
+      this.materialContainer = createElement('div', styles.container) as HTMLDivElement
+      container.appendChild(this.materialContainer)
+
+      // Only render materials after model is loaded
+      new MaterialEditor().renderMaterialsInput(this.materialContainer, loadedModel, this.materials)
+    })
   }
 
   getModelViewerContainerGui = (): HTMLElement => {
@@ -57,4 +67,8 @@ export class AbstractModelManager extends AssetManager {
     container.appendChild(scaleInput)
   }
 
+  onAssetUrlChange = () => {
+    // Clean materials on model url change
+    this.materials = []
+  }
 }
