@@ -5,7 +5,7 @@ import { World } from "../entities/world";
 import { CollisionGroups } from "../enums/collision-groups";
 import { ICharacterAI } from "../interfaces/ICharacterAI";
 import { ICharacterState } from "../interfaces/ICharacterState";
-import { EntityType, IWorldEntity } from "../interfaces/IWorldEntity";
+import { WorldEntityType, IWorldEntity } from "../interfaces/IWorldEntity";
 import { CapsuleCollider } from "../physics/colliders/capsule-collider";
 import { RelativeSpringSimulator } from "../physics/spring-simulation/relative-spring-simulator";
 import { VectorSpringSimulator } from "../physics/spring-simulation/vector-spring-simulator";
@@ -21,7 +21,7 @@ import { IAnimationClip } from "src/ts/editor/interfaces/IAnimationClip";
 const MOVE_SPEED = 4
 
 export class Character extends Object3D implements IWorldEntity {
-  public entityType = EntityType.NPC
+  public entityType = WorldEntityType.NPC
   public updateOrder = 1
 
   public height = 0
@@ -37,7 +37,6 @@ export class Character extends Object3D implements IWorldEntity {
   public velocity = new Vector3()
   public arcadeVelocityInfluence = new Vector3()
   public velocityTarget = new Vector3()
-  public arcadeVelocityIsAdditive = false
 
   public defaultVelocitySimulatorDamping = 0.8
   public defaultVelocitySimulatorMass = 50
@@ -75,6 +74,8 @@ export class Character extends Object3D implements IWorldEntity {
   private physicsEnabled = true
 
   isControllable = true
+
+  JUMP_HEIGHT = 4
   
   constructor(model: Group, animationClips: IAnimationClip[] = [], world: World) {
     super()
@@ -477,8 +478,6 @@ export class Character extends Object3D implements IWorldEntity {
   }
 
   feetRaycast = (): void => {
-    // Player ray casting
-
     // Create ray cast
     let body = this.characterCapsule.body
 
@@ -505,31 +504,11 @@ export class Character extends Object3D implements IWorldEntity {
     arcadeVelocity = applyVectorMatrixXZ(character.orientation, arcadeVelocity)
 
     let newVelocity = new Vector3()
-
-    if (character.arcadeVelocityIsAdditive) {
-      newVelocity.copy(simulatedVelocity)
-
-      let globalVelocityTarget = applyVectorMatrixXZ(character.orientation, character.velocityTarget)
-      let add = new Vector3().copy(arcadeVelocity).multiply(character.arcadeVelocityInfluence)
-
-      if (Math.abs(simulatedVelocity.x) < Math.abs(globalVelocityTarget.x * character.moveSpeed) || haveDifferentSigns(simulatedVelocity.x, arcadeVelocity.x)) {
-        newVelocity.x += add.x
-      }
-
-      if (Math.abs(simulatedVelocity.y) < Math.abs(globalVelocityTarget.y * character.moveSpeed) || haveDifferentSigns(simulatedVelocity.y, arcadeVelocity.y)) {
-        newVelocity.y += add.y
-      }
-
-      if (Math.abs(simulatedVelocity.z) < Math.abs(globalVelocityTarget.z * character.moveSpeed) || haveDifferentSigns(simulatedVelocity.z, arcadeVelocity.z)) {
-        newVelocity.z += add.z
-      }
-    } else {
-      newVelocity = new Vector3(
-        MathUtils.lerp(simulatedVelocity.x, arcadeVelocity.x, character.arcadeVelocityInfluence.x),
-        MathUtils.lerp(simulatedVelocity.y, arcadeVelocity.y, character.arcadeVelocityInfluence.y),
-        MathUtils.lerp(simulatedVelocity.z, arcadeVelocity.z, character.arcadeVelocityInfluence.z),
-      )
-    }
+    newVelocity = new Vector3(
+      MathUtils.lerp(simulatedVelocity.x, arcadeVelocity.x, character.arcadeVelocityInfluence.x),
+      MathUtils.lerp(simulatedVelocity.y, arcadeVelocity.y, character.arcadeVelocityInfluence.y),
+      MathUtils.lerp(simulatedVelocity.z, arcadeVelocity.z, character.arcadeVelocityInfluence.z),
+    )
 
     // If we're hitting the ground, stick to ground
     if (character.rayWasHit) {
@@ -595,7 +574,7 @@ export class Character extends Object3D implements IWorldEntity {
       }
 
       // Add positive vertical velocity
-      body.velocity.y += 4
+      body.velocity.y += this.JUMP_HEIGHT
       // Move above ground by 2x safe offset value
       body.position.y += character.raySafeOffset * 2
       // Reset flag
@@ -621,12 +600,6 @@ export class Character extends Object3D implements IWorldEntity {
     // Add to graphics world
     world.graphicsWorld.add(this)
     world.graphicsWorld.add(this.raycastBox)
-
-    // Shadow cascades
-
-    this.materials.forEach(mat => {
-      world.sky.csm.setupMaterial(mat)
-    })
   }
 
   removeFromWorld = (world: World): void => {

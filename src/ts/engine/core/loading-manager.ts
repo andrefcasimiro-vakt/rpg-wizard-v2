@@ -9,7 +9,7 @@ export class LoadingManager {
   public firstLoad: boolean = true
   public onFinishedCallback: () => void;
 
-  private world: World
+  world: World
   private loadingTracker: LoadingTracker[] = []
   
   fbxLoader: FBXLoader

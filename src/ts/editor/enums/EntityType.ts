@@ -1,4 +1,5 @@
 export enum EntityType {
   Tiles = 'Tiles',
-  Props = 'Props'
+  Props = 'Props',
+  PLAYER = "PLAYER"
 }

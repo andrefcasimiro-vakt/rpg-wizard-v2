@@ -54,14 +54,10 @@ function setupMeshMaterial(meshMaterial: MeshStandardMaterial) {
     }
   }
 
-  let mat = new MeshStandardMaterial()
-  mat.name = meshMaterial?.name
-  mat.aoMap = meshMaterial?.aoMap
-  mat.transparent = meshMaterial?.transparent
-  mat.skinning = meshMaterial?.skinning
-
   if (resourceMaterial?.useDefault) {
-    mat.map = meshMaterial.map
+    const mat: any = meshMaterial.clone()
+    mat.shininess = 0
+    mat.map.anisotropy = 4
     return mat
   }
   
@@ -69,24 +65,26 @@ function setupMeshMaterial(meshMaterial: MeshStandardMaterial) {
     var squareT = new TextureLoader().load(resourceMaterial?.texture)
     squareT.wrapS = RepeatWrapping
     squareT.repeat.set(1, 1)
-    mat.map = squareT
 
-    const textureMaterial = new MeshStandardMaterial({
+    const textureMaterial = new MeshLambertMaterial({
       map: squareT,
       emissiveIntensity: 1,
-      transparent: true,})
+      transparent: true,
+    })
+    // @ts-ignore
+    textureMaterial.shininess = 0
 
     return textureMaterial
   }
 
   if (resourceMaterial?.color) {
     // @ts-ignore
-    mat = new MeshStandardMaterial({ color: resourceMaterial.color})
+    var mat = new MeshStandardMaterial({ color: resourceMaterial.color})
 
     return mat
   }
 
-  return mat
+  return meshMaterial
 }
 
 // Angles

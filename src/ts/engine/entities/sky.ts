@@ -4,6 +4,7 @@ import CSM from 'three-csm'
 import { World } from "./world";
 import { SkyShader } from '../../../lib/shaders/SkyShader'
 import { SphereBufferGeometry } from "three";
+import THREE = require("three");
 
 export class Sky extends Object3D implements IUpdatable {
 
@@ -41,84 +42,112 @@ export class Sky extends Object3D implements IUpdatable {
   constructor(world: World) {
     super()
 
-    this.world = world
+    // this.world = world
 
-    // Sky Material
-    this.skyMaterial = new ShaderMaterial({
-      uniforms: UniformsUtils.clone(SkyShader.uniforms),
-      fragmentShader: SkyShader.fragmentShader,
-      vertexShader: SkyShader.vertexShader,
-      side: BackSide
-    })
+    // const light = new THREE.DirectionalLight( 0xaabbff, 0.3 );
+		// 		light.position.x = 300;
+		// 		light.position.y = 250;
+		// 		light.position.z = - 500;
+		// 		scene.add( light );
 
-    // Sky Mesh
-    this.skyMesh = new Mesh(
-      new SphereBufferGeometry(1000, 24, 12),
-      this.skyMaterial
-    )
+    // // SKYDOME
 
-    this.attach(this.skyMesh)
+    // const vertexShader = document.getElementById( 'vertexShader' ).textContent;
+    // const fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
+    // const uniforms = {
+    //   topColor: { value: new THREE.Color( 0x0077ff ) },
+    //   bottomColor: { value: new THREE.Color( 0xffffff ) },
+    //   offset: { value: 400 },
+    //   exponent: { value: 0.6 }
+    // };
+    // uniforms.topColor.value.copy( light.color );
 
-    // Ambient Light
-    this.hemiLight = new HemisphereLight(0xffffff, 0xffffff, 0.1)
-    this.refreshHemiIntensity()
-    this.hemiLight.color.setHSL(.59, .4, .6)
-    this.hemiLight.groundColor.setHSL(0.095, 0.2, 0.75)
-    this.hemiLight.position.set(0, 50, 0)
-    this.world.graphicsWorld.add(this.hemiLight)
+    // const skyGeo = new THREE.SphereGeometry( 4000, 32, 15 );
+    // const skyMat = new THREE.ShaderMaterial( {
+    //   uniforms: uniforms,
+    //   vertexShader: vertexShader,
+    //   fragmentShader: fragmentShader,
+    //   side: THREE.BackSide
+    // } );
 
-    // Legacy
-    let splitsCallback = (amount, near, far) => {
-      let arr = []
-      for (let i = amount - 1; i >= 0; i--) {
-        arr.push(Math.pow(1 / 4, i))
-      }
-      return arr
-    }
+    // const sky = new THREE.Mesh( skyGeo, skyMat );
 
-    this.csm = new CSM({
-      fov: 80,
-      far: 250,
-      lightIntensity: 2.5,
-      cascades: 3,
-      shadowMapSize: 1024,
-      camera: this.world.camera,
-      parent: this.world.graphicsWorld,
-      mode: 'custom',
-      customSplitsCallback: splitsCallback,
-    })
+    // // Sky Material
+    // this.skyMaterial = new ShaderMaterial({
+    //   uniforms: UniformsUtils.clone(SkyShader.uniforms),
+    //   fragmentShader: SkyShader.fragmentShader,
+    //   vertexShader: SkyShader.vertexShader,
+    //   side: BackSide
+    // })
 
-    this.csm.fade = true
+    // // Sky Mesh
+    // this.skyMesh = new Mesh(
+    //   new SphereBufferGeometry(1000, 24, 12),
+    //   this.skyMaterial
+    // )
 
-    this.refreshSunPosition()
+    // this.attach(this.skyMesh)
 
-    this.world.graphicsWorld.add(this)
-    this.world.registerUpdatable(this)
+    // // Ambient Light
+    // this.hemiLight = new HemisphereLight(0xffffff, 0xffffff, 0.1)
+    // this.refreshHemiIntensity()
+    // this.hemiLight.color.setHSL(.59, .4, .6)
+    // this.hemiLight.groundColor.setHSL(0.095, 0.2, 0.75)
+    // this.hemiLight.position.set(0, 50, 0)
+    // this.world.graphicsWorld.add(this.hemiLight)
+
+    // // Legacy
+    // let splitsCallback = (amount, near, far) => {
+    //   let arr = []
+    //   for (let i = amount - 1; i >= 0; i--) {
+    //     arr.push(Math.pow(1 / 4, i))
+    //   }
+    //   return arr
+    // }
+
+    // this.csm = new CSM({
+    //   fov: 80,
+    //   far: 250,
+    //   lightIntensity: 2.5,
+    //   cascades: 3,
+    //   shadowMapSize: 512,
+    //   camera: this.world.camera,
+    //   parent: this.world.graphicsWorld,
+    //   mode: 'custom',
+    //   customSplitsCallback: splitsCallback,
+    // })
+
+    // this.csm.fade = true
+
+    // this.refreshSunPosition()
+
+    // this.world.graphicsWorld.add(this)
+    // this.world.registerUpdatable(this)
   }
 
   update = () => {
-    this.position.copy(this.world.camera.position)
-    this.refreshSunPosition()
+    // this.position.copy(this.world.camera.position)
+    // this.refreshSunPosition()
 
-    this.csm.update(this.world.camera.matrix)
-    this.csm.lightDirection = new Vector3(
-      -this.sunPosition.x,
-      -this.sunPosition.y,
-      -this.sunPosition.z
-    ).normalize()
+    // this.csm.update(this.world.camera.matrix)
+    // this.csm.lightDirection = new Vector3(
+    //   -this.sunPosition.x,
+    //   -this.sunPosition.y,
+    //   -this.sunPosition.z
+    // ).normalize()
   }
 
   refreshSunPosition = () => {
-    const sunDistance = 10
-    this.sunPosition.x = sunDistance * Math.sin(this._theta * Math.PI / 180) * Math.cos(this._phi * Math.PI / 180)
-    this.sunPosition.y = sunDistance * Math.sin(this._phi * Math.PI / 180)
-    this.sunPosition.z = sunDistance * Math.cos(this._theta * Math.PI / 180) * Math.cos(this._phi * Math.PI / 180)
+    // const sunDistance = 10
+    // this.sunPosition.x = sunDistance * Math.sin(this._theta * Math.PI / 180) * Math.cos(this._phi * Math.PI / 180)
+    // this.sunPosition.y = sunDistance * Math.sin(this._phi * Math.PI / 180)
+    // this.sunPosition.z = sunDistance * Math.cos(this._theta * Math.PI / 180) * Math.cos(this._phi * Math.PI / 180)
 
-    this.skyMaterial.uniforms.sunPosition.value.copy(this.sunPosition)
-    this.skyMaterial.uniforms.cameraPos.value.copy(this.world.camera.position)
+    // this.skyMaterial.uniforms.sunPosition.value.copy(this.sunPosition)
+    // this.skyMaterial.uniforms.cameraPos.value.copy(this.world.camera.position)
   }
 
   refreshHemiIntensity = () => {
-    this.hemiLight.intensity = this.minHemiIntensity + Math.pow(1 - (Math.abs(this._phi - 90) / 90), 0.25) * (this.maxHemiIntensity - this.minHemiIntensity)
+    // this.hemiLight.intensity = this.minHemiIntensity + Math.pow(1 - (Math.abs(this._phi - 90) / 90), 0.25) * (this.maxHemiIntensity - this.minHemiIntensity)
   }
 }

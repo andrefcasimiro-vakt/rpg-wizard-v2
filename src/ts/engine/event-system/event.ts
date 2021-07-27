@@ -13,7 +13,7 @@ import { LoadingManager } from "../core/loading-manager";
 import { World } from "../entities/world";
 import { IGameStateSubscriber } from "../interfaces/IGameStateSubscriber";
 import { IUpdatable } from "../interfaces/IUpdatable";
-import { EntityType } from "../interfaces/IWorldEntity";
+import { WorldEntityType } from "../interfaces/IWorldEntity";
 
 export class Event implements IUpdatable, IGameStateSubscriber {
   subscriptionUuid = shortid.generate()
@@ -117,7 +117,7 @@ export class Event implements IUpdatable, IGameStateSubscriber {
     }
 
     if (this.player == null) {
-      this.player = this.world.characters.find(char => char.entityType == EntityType.PLAYER)
+      this.player = this.world.characters.find(char => char.entityType == WorldEntityType.PLAYER)
     }
 
     const eventPosition = this.pageCharacter?.position
