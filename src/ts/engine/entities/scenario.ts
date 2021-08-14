@@ -1,7 +1,7 @@
 import { IMap } from "../../editor/interfaces/IMap"
 import { IMapEvent } from "../../editor/interfaces/IMapEvent"
 import { IMapGround } from "../../editor/interfaces/IMapGround"
-import {  AmbientLight, BoxGeometry, DirectionalLight, Mesh, MeshBasicMaterial, Object3D, PointLight, Vector3 } from "three"
+import {  BoxGeometry, Mesh, MeshBasicMaterial, MeshPhongMaterial, Object3D, Vector3 } from "three"
 import { LoadingManager } from "../core/loading-manager"
 import { UIManager } from "../core/ui-manager"
 import { World } from "./world"
@@ -13,8 +13,6 @@ import { MapStorage } from "src/ts/storage"
 import { RepeatWrapping } from "three"
 import { IMapProp } from "src/ts/editor/interfaces/IMapProp"
 import { EntityLoader } from "src/ts/engine/core/entity-loader"
-import THREE = require("three")
-import { Sky } from "three/examples/jsm/objects/Sky";
 
 var groundMesh = new Mesh(new BoxGeometry(1, 1, 1))
 groundMesh.castShadow = true
@@ -73,22 +71,6 @@ export class Scenario {
   drawMap = (): void => {
     this.scene = new Object3D()
 
-    // var sky = new Sky();
-		// 		sky.scale.setScalar( 450000 );
-
-    //     var uniforms = sky.material.uniforms
-    //     uniforms[ "turbidity" ].value = 10
-    //     uniforms[ "rayleigh" ].value = 2
-    //     uniforms[ "mieCoefficient" ].value = .005
-    //     uniforms[ "mieDirectionalG" ].value = .8
-    //     uniforms[ "luminance" ].value = 1
-    //     uniforms[ 'sunPosition' ].value = new Vector3(0, 10, 0)
-    // sky.material.uniforms = uniforms
-    // this.scene.add(sky)
-
-
-    
-
     const currentMap = this.map
     const currentMapGrounds = currentMap?.grounds || []
     const currentMapEvents = currentMap?.events || []
@@ -101,19 +83,18 @@ export class Scenario {
     this.world.graphicsWorld.add(this.scene)
 
     this.world.initSky()
-
   }
 
   handleGround = (currentMapGround: IMapGround) => {
     var entry: Mesh;
     entry = groundMesh.clone()
-    entry.receiveShadow = true
+
     const groundTexture = this.entityLoader.entityTextureBank?.[currentMapGround?.entityUuid]
     if (groundTexture) {
       groundTexture.wrapS = RepeatWrapping
       groundTexture.repeat.set(1, 1)
 
-      entry.material = new MeshBasicMaterial({ map: groundTexture })
+      entry.material = new MeshPhongMaterial({ map: groundTexture })
     }
 
     const { x, y, z } = currentMapGround.position

@@ -16,28 +16,18 @@ import { IUpdatable } from "../interfaces/IUpdatable";
 import { WorldEntityType } from "../interfaces/IWorldEntity";
 
 export class Event implements IUpdatable, IGameStateSubscriber {
+
   subscriptionUuid = shortid.generate()
-
   updateOrder = 1;
-  
   event: IEvent
-
   eventPosition: Vector3
-
   world: World
-
   player: Character
-
   isEnabled: boolean = true
-
   loadingManager: LoadingManager
-
   activePage: IEventPage
-  
   pageCharacter: Character
-
   lastActiveCharacterGraphicUuid: string
-  
   previousPlayerPosition: Vector3
 
   constructor(world: World, eventPositon: Vector3, eventUuid: string) {
@@ -56,7 +46,6 @@ export class Event implements IUpdatable, IGameStateSubscriber {
 
   setupEvent = () => {
     this.setupActivePage()
-
     this.setupGraphic()
 
     if (this.activePage.trigger === EventTrigger.AUTOMATIC || this.activePage.trigger  === EventTrigger.PARALLEL_PROCESS) {
@@ -65,8 +54,6 @@ export class Event implements IUpdatable, IGameStateSubscriber {
   }
 
   setupActivePage = () => {
-    // Get the first page where all switches are active
-
     // Find last
     this.activePage = this.event.eventPages.slice().reverse().find(page => {
       return page.switches.length && page.switches.every(pageSwitch =>
@@ -99,13 +86,9 @@ export class Event implements IUpdatable, IGameStateSubscriber {
 
     this.loadingManager.loadFbx(resource.downloadUrl, (model: Group) => {
       model.scale.setScalar(resource.scale)
-
       this.pageCharacter = new Character(model, resource.animationClips, this.world)
-
       this.pageCharacter.setPosition(this.eventPosition.x, this.eventPosition.y + 1, this.eventPosition.z)
-
       this.world.add(this.pageCharacter)
-
       this.lastActiveCharacterGraphicUuid = resource.uuid
     })
   }

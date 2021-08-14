@@ -21,7 +21,15 @@ export class SceneRenderer {
   raycaster: Raycaster
   mouse: Vector2
 
-  constructor(options: SceneOptions) {
+  container: HTMLElement
+  canvasWidth: number
+  canvasHeight: number
+
+  constructor(container: HTMLElement, canvasWidth, canvasHeight, options: SceneOptions) {
+    this.container = container
+    this.canvasWidth = canvasWidth
+    this.canvasHeight = canvasHeight
+
     this.update = this.update.bind(this)
     this.onDoubleClick = this.onDoubleClick.bind(this)
 
@@ -52,8 +60,8 @@ export class SceneRenderer {
   }
 
   initCamera = () => {
-    var SCREEN_WIDTH = window.innerWidth
-    var SCREEN_HEIGHT = window.innerHeight
+    var SCREEN_WIDTH = this.canvasWidth
+    var SCREEN_HEIGHT = this.canvasHeight
     var VIEW_ANGLE = 45
     var ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT
     var NEAR = 0.1
@@ -65,7 +73,7 @@ export class SceneRenderer {
 
   initRenderer = () => {
     this.renderer = new WebGLRenderer()
-    document.body.appendChild(this.renderer.domElement)
+    this.container.appendChild(this.renderer.domElement)
   }
 
   initControls = () => {
@@ -96,19 +104,26 @@ export class SceneRenderer {
   }
 
   resize = () => {
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
+    this.renderer.setSize(this.canvasWidth, this.canvasHeight)
     this.renderer.setPixelRatio(window.devicePixelRatio)
-    this.camera.aspect = window.innerWidth / window.innerHeight
+    this.camera.aspect = this.canvasWidth / this.canvasHeight
     this.camera.updateProjectionMatrix()
   }
 
   public onDoubleClick(event: MouseEvent) {
-    this.mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
-    this.mouse.y = -(event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
+    const eventClientX = Math.abs(this.renderer.domElement.offsetLeft - event.clientX)
+    const eventClientY = Math.abs(this.renderer.domElement.offsetTop - event.clientY)
+    this.mouse.x = (eventClientX / this.canvasWidth) * 2 - 1;
+    this.mouse.y = -(eventClientY / this.canvasHeight) * 2 + 1;
   }
 
   onMouseMove = (event: MouseEvent) => {
-    this.mouse.x = (event.clientX / this.renderer.domElement.clientWidth) * 2 - 1;
-    this.mouse.y = -(event.clientY / this.renderer.domElement.clientHeight) * 2 + 1;
+    const eventClientX = Math.abs(this.renderer.domElement.offsetLeft - event.clientX)
+    const eventClientY = Math.abs(this.renderer.domElement.offsetTop - event.clientY)
+
+    console.log(eventClientX)
+    console.log(eventClientY)
+    this.mouse.x = (eventClientX / this.canvasWidth) * 2 - 1;
+    this.mouse.y = -(eventClientY / this.canvasHeight) * 2 + 1;
   }
 }

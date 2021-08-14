@@ -3,7 +3,6 @@ import { IEventAction } from "src/ts/editor/interfaces/IEventAction";
 import { Character } from "../../../characters/character";
 import { UIDialogueManager } from "../../../ui/ui-dialogue-manager";
 import { Dispatcher } from "../../dispatcher";
-
 export class DispatchShowMessage extends Dispatcher {
 
   player: Character

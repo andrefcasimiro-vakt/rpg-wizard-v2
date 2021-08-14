@@ -47,7 +47,7 @@ export class MapEditor extends SceneRenderer {
   showGrid = true
 
   constructor(editor: Editor) {
-    super({ ambientLightColor: '#FFF', skyboxColor: '#FFF' })
+    super(document.body, window.innerWidth, window.innerHeight, { ambientLightColor: '#FFF', skyboxColor: '#FFF' })
 
     this.editor = editor
     this.toolbarEditor = editor.toolbarEditor

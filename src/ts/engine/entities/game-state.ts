@@ -1,6 +1,5 @@
 import { ISwitch } from "src/ts/editor/interfaces/ISwitch"
 import { getGameState, setGameState } from "src/ts/storage/game-state"
-import { Event } from "../event-system/event"
 import { IGameState } from "../interfaces/IGameState"
 import { IGameStateSubscriber } from "../interfaces/IGameStateSubscriber"
 

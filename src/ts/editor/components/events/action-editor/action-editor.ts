@@ -6,6 +6,7 @@ import { EventEditor } from "../event-editor";
 // Actions
 import { ShowMessages } from "./actions/messages/show-messages";
 import { ControlSwitches } from "./actions/game-progression/control-switches";
+import { TransferPlayer } from "src/ts/editor/components/events/action-editor/actions/movement/transfer-player/transfer-player";
 
 const actions = {
   'Messages': {
@@ -14,6 +15,9 @@ const actions = {
   },
   'Game Progression': {
     'Control Switches...': ControlSwitches,
+  },
+  'Movement': {
+    'Transfer Player...': TransferPlayer,
   },
 }
 

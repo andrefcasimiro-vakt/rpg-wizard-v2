@@ -1,0 +1,16 @@
+:local .content {
+  display: flex;
+  width: 100%;
+}
+
+:local .mapListContainer {
+  display: flex;
+  width: 200px;
+  overflow: scroll;
+}
+
+:local .mapPreviewContainer {
+  display: flex;
+  width: 300px;
+  height: 300px;
+}

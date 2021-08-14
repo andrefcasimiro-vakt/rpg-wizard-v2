@@ -1,0 +1,57 @@
+:local .mapListContainer {
+  display: flex;
+}
+
+:local .guiPanel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+
+  border: 1px solid var(--primaryDark);
+
+  background: var(--primaryLight);
+  padding: 10px;
+}
+
+:local .guiHeaderText {
+  color: var(--dark);
+}
+
+:local .header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+:local .mapList {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  overflow: scroll;
+}
+
+:local .mapItem {
+  display: flex;
+  flex-direction: column;
+}
+
+:local .mapButton {
+  width: 100%;
+  border: none;
+  padding: 5px 0;
+  background: none;
+  display: flex;
+  width: 100%;
+  padding: 5px;
+  margin: 2px 0;
+}
+
+:local .mapButton svg {
+  margin-right: 5px;
+}
+
+:local .mapButtonActive {
+  background-color: var(--primaryDark);
+}
