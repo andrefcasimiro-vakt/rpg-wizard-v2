@@ -15,7 +15,7 @@ export class MapList {
 
   onMapSelection: (mapUuid: string) => void;
 
-  prefixUuid = shortid.generate()
+  prefixUuid = `map${shortid.generate()}`
 
   selectedMapUuid: string
   

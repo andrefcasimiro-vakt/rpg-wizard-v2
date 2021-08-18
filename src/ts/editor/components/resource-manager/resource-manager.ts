@@ -74,7 +74,6 @@ export class ResourceManager {
       this.update()
 
       if (hash.includes('mode=edit')) {
-        console.log('hey')
         this.updateAsset()
       }
     }

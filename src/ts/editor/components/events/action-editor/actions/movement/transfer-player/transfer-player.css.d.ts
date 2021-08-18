@@ -1,8 +1,14 @@
 declare namespace TransferPlayerCssNamespace {
   export interface ITransferPlayerCss {
     content: string;
+    helpText: string;
+    helpTextContainer: string;
+    labelHeaderText: string;
+    labelsContainer: string;
     mapListContainer: string;
     mapPreviewContainer: string;
+    selectedCoordinatesLabel: string;
+    selectedMapLabel: string;
   }
 }
 

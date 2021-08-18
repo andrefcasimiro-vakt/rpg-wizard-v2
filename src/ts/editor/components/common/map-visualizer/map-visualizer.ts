@@ -149,18 +149,6 @@ export class MapVisualizer extends SceneRenderer {
     })
   }
 
-  renderStartingPosition = () => {
-    const startingPosition = MapStorage.getStartingPosition()
-    if (startingPosition == null) {
-      return
-    }
-
-    var entry = this.groundMesh.clone()
-    entry.position.set(startingPosition.x, startingPosition.y + 0.01, startingPosition.z)
-    entry.material = new MeshBasicMaterial({ color: 'yellow', opacity: 0.9, transparent: true })
-    this.scene.add(entry)
-  }
-
   renderScene() {
     this.clearScene()
 
@@ -171,8 +159,6 @@ export class MapVisualizer extends SceneRenderer {
     this.renderGrid()
     this.renderGrounds()
     this.renderProps()
-
-    this.renderStartingPosition()
 
     this.scene.add(this.ambientLight)
     this.scene.add(this.skybox)

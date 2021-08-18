@@ -27,8 +27,6 @@ export abstract class EventActionEditor {
     addOrUpdateEvent(event)
 
     if (this.onChangesCommited) {
-      console.log('teste')
-
       this.onChangesCommited()
     }
   }

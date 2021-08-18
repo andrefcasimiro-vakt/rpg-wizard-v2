@@ -23,7 +23,22 @@ export class TransferPlayer extends EventActionEditor {
 
   currentValue: TransferPlayerPayload
 
+  mapList: MapList
+  mapTeleportEditor: MapTeleportEditor
+
+  mapListContainer: HTMLElement
+  mapPreviewContainer: HTMLElement
+
+  selectionDetailsContainer: HTMLElement
+
   open = () => {
+    // Init references
+    this.mapListContainer = createElement('div', styles.mapListContainer)
+    this.mapPreviewContainer = createElement('div', styles.mapPreviewContainer)
+
+    this.mapList =  new MapList(this.mapListContainer)
+    this.mapTeleportEditor = new MapTeleportEditor(this.mapPreviewContainer, 300, 300)
+
     this.modalContext.open(this.drawGui())
   }
 
@@ -32,6 +47,11 @@ export class TransferPlayer extends EventActionEditor {
     this.actionUuid = payload.uuid
 
     this.modalContext.open(this.drawGui())
+  }  
+
+
+  setEvent = (payload: TransferPlayerPayload) => {
+    this.currentValue = payload
   }  
 
   drawGui = () => {
@@ -44,38 +64,40 @@ export class TransferPlayer extends EventActionEditor {
     const content = createElement('div', styles.content)
     container.appendChild(content)
 
-    const mapListContainer = createElement('div', styles.mapListContainer)
-    content.appendChild(mapListContainer)
+    content.appendChild(this.mapListContainer)
+    content.appendChild(this.mapPreviewContainer)
 
-    const mapListComponent = new MapList(mapListContainer)
-    const mapPreviewContainer = createElement('div', styles.mapPreviewContainer)
-    content.appendChild(mapPreviewContainer)
+    this.mapTeleportEditor.onIntersectionCompleted = (mapUuidToTeleport, spawnPosition) => {
+      this.setEvent({ mapUuid: mapUuidToTeleport, spawnPosition })
 
-    const mapTeleportEditor = new MapTeleportEditor(mapPreviewContainer, 300, 300)
-    
-    mapListComponent.onMapSelection = (mapUuid) => {
-      const match = MapStorage.get()?.find(x => x.uuid === mapUuid)
-      mapTeleportEditor.currentMap = match
-      mapTeleportEditor.renderScene()
+      this.mapTeleportEditor.renderScene()
+
+      this.refreshSelectionDetails()
     }
-    // const switchContainer = document.createElement('li')
-    // switchContainer.style.display = 'flex'
-    // switchContainer.style.alignItems = 'center'
-    // switchContainer.style.justifyContent = 'space-between'
-    // switchContainer.style.padding = '5px'
-    // switchContainer.style.border = `1px solid ${Theme.PRIMARY_DARK}`
-    // container.appendChild(switchContainer)
 
-    // const switchNameAndSelectionContainer = document.createElement('div')
-    // switchNameAndSelectionContainer.style.display = 'flex'
-    // switchNameAndSelectionContainer.style.alignItems = 'center'
-    // switchNameAndSelectionContainer.style.justifyContent = 'center'
-    // switchContainer.appendChild(switchNameAndSelectionContainer)
+    if (this.currentValue?.mapUuid) {
+      const currentMap = MapStorage.get()?.find(x => x.uuid === this.currentValue.mapUuid)
+      if (currentMap) this.mapTeleportEditor.currentMap = currentMap
+    }
+    if (this.currentValue?.spawnPosition) {
+      this.mapTeleportEditor.positionToTeleport = this.currentValue.spawnPosition
+    }
 
-    // const switchName = document.createElement('p')
-    // switchName.style.fontSize = '12px'
-    // switchName.innerHTML = this.selectedSwitch.name == null ? `Select a switch...` : `${this.selectedSwitch.name}`
-    // switchNameAndSelectionContainer.appendChild(switchName)
+    this.mapList.onMapSelection = (mapUuid) => {
+      const match = MapStorage.get()?.find(x => x?.uuid === mapUuid)
+      this.mapTeleportEditor.currentMap = match
+      this.mapTeleportEditor.renderScene()
+    }
+
+    const helpTextContainer = createElement('div', styles.helpTextContainer)
+    this.mapPreviewContainer.appendChild(helpTextContainer)
+    const helpText = createElement('p', styles.helpText)
+    helpTextContainer.appendChild(helpText)
+    helpText.innerHTML = 'Press "SHIFT" on the tile you wish to transfer the player'
+
+    this.selectionDetailsContainer = createElement('div', '')
+    this.mapPreviewContainer.appendChild(this.selectionDetailsContainer)
+    this.refreshSelectionDetails()
 
     // const switchListButton = document.createElement('button')
     // switchListButton.innerHTML = '...'
@@ -130,9 +152,28 @@ export class TransferPlayer extends EventActionEditor {
     return container
   }
 
-  handleSwitchSelection = (nextSwitch: ISwitch) => {
-    // this.selectedSwitch = nextSwitch
-    // this.modalContext.refresh(this.drawGui())
+  refreshSelectionDetails = () => {
+    this.selectionDetailsContainer.innerHTML = ''
+    const labelsContainer = createElement('div', styles.labelsContainer)
+    this.selectionDetailsContainer.appendChild(labelsContainer)
+
+    const labelHeaderText = createElement('h4', styles.labelHeaderText)
+    labelHeaderText.innerHTML = 'Transfer Player Information'
+    labelsContainer.appendChild(labelHeaderText)
+
+    const currentMapName = MapStorage.get()?.find(x => x?.uuid === this.currentValue?.mapUuid)?.name || '-'
+    const selectedMapLabel = createElement('p', styles.selectedMapLabel)
+    selectedMapLabel.innerHTML = `Map to teleport: ${currentMapName}`
+    labelsContainer.appendChild(selectedMapLabel)
+
+    const selectedCoordinatesLabel = createElement('p', styles.selectedCoordinatesLabel)
+    if (this.currentValue?.spawnPosition) {
+      const { x, y, z } = this.currentValue?.spawnPosition
+      selectedCoordinatesLabel.innerHTML = `Position to teleport: (${x}, ${y}, ${z})`
+    } else {
+      selectedCoordinatesLabel.innerHTML = `Position to teleport: -`
+    }
+    labelsContainer.appendChild(selectedCoordinatesLabel)
   }
 
   save = () => {

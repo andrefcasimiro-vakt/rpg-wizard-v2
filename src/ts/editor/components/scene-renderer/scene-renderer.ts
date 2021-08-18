@@ -121,8 +121,6 @@ export class SceneRenderer {
     const eventClientX = Math.abs(this.renderer.domElement.offsetLeft - event.clientX)
     const eventClientY = Math.abs(this.renderer.domElement.offsetTop - event.clientY)
 
-    console.log(eventClientX)
-    console.log(eventClientY)
     this.mouse.x = (eventClientX / this.canvasWidth) * 2 - 1;
     this.mouse.y = -(eventClientY / this.canvasHeight) * 2 + 1;
   }

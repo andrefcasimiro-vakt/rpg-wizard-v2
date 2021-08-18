@@ -62,8 +62,6 @@ export class Scenario {
 
       this.world.inputManager.setPointerLock(true)
       UIManager.setLoadingScreenVisible(false)
-
-      console.log(this.entityLoader)
       this.drawMap()
     }
   }

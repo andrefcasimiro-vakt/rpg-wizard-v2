@@ -11,6 +11,45 @@
 
 :local .mapPreviewContainer {
   display: flex;
+  flex-direction: column;
+}
+
+:local .mapPreviewContainer canvas {
   width: 300px;
   height: 300px;
+  border: 1px solid var(--primaryDark);
+}
+
+:local .helpTextContainer {
+  background: var(--primaryLight);
+  border: 1px solid var(--primaryDark);
+  border-top: none;
+}
+
+:local .helpText {
+  color: #000;
+  font-size: 11px;
+  margin: 0;
+  padding: 5px;
+}
+
+:local .labelsContainer {
+  display: flex;
+  flex-direction: column;
+
+  padding: 10px;
+  background: var(--primaryLight);
+  border: 1px solid var(--primaryDark);
+  margin-top: 10px;
+}
+
+:local .labelHeaderText {
+
+}
+
+:local .selectedMapLabel {
+  
+}
+:local .selectedCoordinatesLabel {
+  
 }
